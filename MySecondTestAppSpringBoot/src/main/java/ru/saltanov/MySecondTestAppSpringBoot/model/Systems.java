@@ -3,6 +3,7 @@ package ru.saltanov.MySecondTestAppSpringBoot.model;
 import com.fasterxml.jackson.annotation.JsonValue;
 
 public enum Systems {
+    EMPTY(""),
     ERP("ERP"),
     CRM("CRM"),
     WMS("WMS"),
