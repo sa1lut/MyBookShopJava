@@ -4,7 +4,6 @@ import jakarta.transaction.Transactional;
 import org.springframework.stereotype.Service;
 import ru.BookShop.my_book_shop.dto.BookDto;
 import ru.BookShop.my_book_shop.entity.Book;
-import ru.BookShop.my_book_shop.entity.User;
 import ru.BookShop.my_book_shop.repository.BookRepository;
 
 import java.util.List;
@@ -34,6 +33,21 @@ public class BookServiceImpl implements BookService {
         book.setPrice(bookDto.getPrice());
 
         bookRepository.save(book);
+    }
+
+    @Override
+    public BookDto createBook(BookDto bookDto) {
+        Book book = new Book();
+        book.setTitle(bookDto.getTitle());
+        book.setAuthor(bookDto.getAuthor());
+        book.setPrice(bookDto.getPrice());
+        Book newBook = bookRepository.save(book);
+        bookDto.setTitle(newBook.getTitle());
+        bookDto.setAuthor(newBook.getAuthor());
+        bookDto.setPrice(newBook.getPrice());
+        bookDto.setId(newBook.getId());
+
+        return bookDto;
     }
 
     public List<Book> getBooksForUser() {

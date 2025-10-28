@@ -2,6 +2,8 @@ package ru.BookShop.my_book_shop.controller;
 
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
@@ -14,6 +16,8 @@ import ru.BookShop.my_book_shop.repository.BookRepository;
 import ru.BookShop.my_book_shop.service.BookService;
 import ru.BookShop.my_book_shop.service.UserService;
 
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Optional;
 
 @Controller
@@ -37,6 +41,7 @@ public class BookController {
     @GetMapping("/new")
     public ModelAndView showBookForm() {
         ModelAndView mav = new ModelAndView("add-book-form");
+        mav.addObject("title", "Добавить книгу");
         mav.addObject("book", new Book());
 
         return mav;
@@ -63,7 +68,7 @@ public class BookController {
         if (optionalBook.isPresent()) {
             book = optionalBook.get();
         }
-
+        mav.addObject("title", "Изменить книгу");
         mav.addObject("book", book);
 
         return mav;
@@ -75,4 +80,23 @@ public class BookController {
         return "redirect:/books/list";
     }
 
+    @PostMapping("/create-ajax")
+    @ResponseBody
+    public ResponseEntity<?> createBookAjax(@Valid @RequestBody BookDto bookDto,
+                                            BindingResult result) {
+        if (result.hasErrors()) {
+            Map<String, String> errors = new HashMap<>();
+            result.getFieldErrors().forEach(error ->
+                    errors.put(error.getField(), error.getDefaultMessage()));
+            return ResponseEntity.badRequest().body(errors);
+        }
+
+        try {
+            BookDto savedBook = bookService.createBook(bookDto);
+            return ResponseEntity.ok(savedBook);
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(Map.of("message", "Ошибка при создании книги: " + e.getMessage()));
+        }
+    }
 }

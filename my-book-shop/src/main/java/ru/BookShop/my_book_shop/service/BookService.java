@@ -1,5 +1,6 @@
 package ru.BookShop.my_book_shop.service;
 
+import jakarta.validation.Valid;
 import ru.BookShop.my_book_shop.dto.BookDto;
 import ru.BookShop.my_book_shop.entity.Book;
 
@@ -12,4 +13,5 @@ public interface BookService {
     List<Book> getBooksForUser();
     Optional<Book> findById(Long id);
     void deleteBook(Long id);
+    BookDto createBook(@Valid BookDto bookDto);
 }
