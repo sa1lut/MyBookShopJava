@@ -39,8 +39,10 @@ public class BookstoreController {
     @GetMapping("/new")
     public ModelAndView showBookstoreForm(Model model) {
         ModelAndView mav = new ModelAndView("add-bookstore-form");
+        mav.addObject("title", "Создать магазин");
         mav.addObject("availableBooks", bookService.getBooksForUser());
         mav.addObject("bookstore", new Bookstore());
+        mav.addObject("book", new Book());
         return mav;
     }
 
@@ -64,7 +66,7 @@ public class BookstoreController {
         if (optionalBookstore.isPresent()) {
             bookStore = optionalBookstore.get();
         }
-
+        mav.addObject("title", "Изменить магазин");
         mav.addObject("bookStore", bookStore);
 
         return mav;
