@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="ru"
+      xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>Главная страница</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css"
+          rel="stylesheet"
+          integrity="sha384-EVSTQN3/azprG1Anm3QDgpJLIm9Nao0Yz1ztcQTwFspd3yD65VohhpuuCOmLASjC"
+          crossorigin="anonymous">
+</head>
+<body>
+<nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+    <div class="container-fluid">
+        <a class="navbar-brand" th:href="@{/home}">BookShop</a>
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent"
+                aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="navbarSupportedContent">
+            <ul th:if="${#authorization.expression('isAuthenticated()')}" class="navbar-nav me-auto mb-2 mb-lg-0">
+                <li class="nav-item">
+                    <a class="nav-link active" aria-current="page" th:href="@{/books/list}">Перейти к книгам</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link active" aria-current="page" th:href="@{/bookstores}">Перейти к магазинам</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link active" aria-current="page" th:href="@{/home}"><span th:text="${#authentication.name}"></span></a>
+                </li>
+                <li class="nav-item">
+                    <form class="nav-link active" th:action="@{/logout}" method="post">
+                        <button type="submit" class="btn btn-primary">Выйти</button>
+                    </form>
+                </li>
+
+            </ul>
+            <ul th:unless="${#authorization.expression('isAuthenticated()')}" class="navbar-nav me-auto mb-2 mb-lg-0">
+                <li class="nav-item">
+                    <a class="nav-link active" aria-current="page" th:href="@{/login}">Войти</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link active" aria-current="page" th:href="@{/register}">Зарегистрироваться к магазинам</a>
+                </li>
+            </ul>
+        </div>
+    </div>
+</nav>
+<div class="container">
+    <h1>Добро пожаловать в систему управления книгами</h1>
+    <div th:if="${#authorization.expression('isAuthenticated()')}">
+        <p>Вы вошли как: <span th:text="${#authentication.name}"></span></p>
+        <a th:href="@{/books}" class="btn">Перейти к книгам</a>
+        <a th:href="@{/bookstores}" class="btn">Перейти к магазинам</a>
+        <form th:action="@{/logout}" method="post">
+            <button type="submit" class="btn btn-logout">Выйти</button>
+        </form>
+    </div>
+    <div th:unless="${#authorization.expression('isAuthenticated()')}">
+        <a th:href="@{/login}" class="btn">Войти</a>
+        <a th:href="@{/register}" class="btn">Зарегистрироваться</a>
+    </div>
+</div>
+</body>
+</html>
