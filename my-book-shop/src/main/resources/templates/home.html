@@ -1,29 +1,135 @@
 <!DOCTYPE html>
-<html lang="ru"
-      xmlns:th="http://www.thymeleaf.org">
+<html lang="ru" xmlns:th="http://www.thymeleaf.org">
 <head>
-    <title>Главная страница</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css"
-          rel="stylesheet"
-          integrity="sha384-EVSTQN3/azprG1Anm3QDgpJLIm9Nao0Yz1ztcQTwFspd3yD65VohhpuuCOmLASjC"
-          crossorigin="anonymous">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BookStore - Главная страница</title>
+    <!-- Bootstrap 5 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Bootstrap Icons -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
+    <style>
+        .hero-section {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 100px 0;
+            margin-bottom: 50px;
+        }
+        .feature-icon {
+            width: 60px;
+            height: 60px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 20px;
+        }
+        .btn-custom {
+            padding: 12px 30px;
+            font-weight: 600;
+            border-radius: 50px;
+            transition: all 0.3s ease;
+        }
+        .btn-primary-custom {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border: none;
+        }
+        .btn-primary-custom:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+        }
+        .btn-outline-custom {
+            border: 2px solid #667eea;
+            color: #667eea;
+        }
+        .btn-outline-custom:hover {
+            background: #667eea;
+            color: white;
+            transform: translateY(-2px);
+        }
+        .card-hover {
+            transition: transform 0.3s ease;
+        }
+        .card-hover:hover {
+            transform: translateY(-5px);
+        }
+    </style>
 </head>
 <body>
+<!-- Навигационная панель -->
 <nav th:replace="~{navbar :: navbar}"></nav>
-<div class="container">
-    <h1>Добро пожаловать в систему управления книгами</h1>
-    <div th:if="${#authorization.expression('isAuthenticated()')}">
-        <p>Вы вошли как: <span th:text="${#authentication.name}"></span></p>
-        <a th:href="@{/books}" class="btn">Перейти к книгам</a>
-        <a th:href="@{/bookstores}" class="btn">Перейти к магазинам</a>
-        <form th:action="@{/logout}" method="post">
-            <button type="submit" class="btn btn-logout">Выйти</button>
-        </form>
+
+<!-- Герой секция -->
+<section class="hero-section">
+    <div class="container">
+        <div class="row align-items-center">
+            <div class="col-lg-6">
+                <h1 class="display-4 fw-bold mb-4">Добро пожаловать в BookShop</h1>
+                <p class="lead mb-4">
+                    Современная система управления книжными магазинами.
+                    Создавайте магазины, управляйте книгами.
+                </p>
+                <div class="d-flex gap-3 flex-wrap">
+                    <a th:href="@{/bookstores/list}" class="btn btn-light btn-custom">
+                        <i class="bi bi-list-ul me-2"></i>Список магазинов
+                    </a>
+                    <a th:href="@{/books/list}" class="btn btn-outline-light btn-custom">
+                        <i class="bi bi-list-ul me-2"></i>Список книг
+                    </a>
+                </div>
+            </div>
+            <div class="col-lg-6 text-center">
+                <i class="bi bi-journal-text" style="font-size: 200px; opacity: 0.8;"></i>
+            </div>
+        </div>
     </div>
-    <div th:unless="${#authorization.expression('isAuthenticated()')}">
-        <a th:href="@{/login}" class="btn">Войти</a>
-        <a th:href="@{/register}" class="btn">Зарегистрироваться</a>
+</section>
+
+<section class="py-5">
+    <div class="container">
+        <div class="row mb-5">
+            <div class="col-12 text-center">
+                <h2 class="fw-bold mb-3">Кем создано</h2>
+            </div>
+        </div>
+        <div class="row g-4 justify-content-center">
+            <div class="col-md-4">
+                <div class="card border-0 shadow-sm card-hover h-100">
+                    <div class="card-body text-center p-4">
+                        <div class="feature-icon">
+                            <i class="bi bi-person-circle me-2 text-muted" style="font-size: 24px;"></i>
+                        </div>
+                        <h5 class="card-title">Разработчик</h5>
+                        <p class="card-text text-muted">
+                            Салтанов Александр Викторович
+                            РИЗ-240938у
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
-</div>
+</section>
+
+<!-- Bootstrap JS -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+<script>
+    // Простая анимация для карточек при загрузке
+    document.addEventListener('DOMContentLoaded', function() {
+        const cards = document.querySelectorAll('.card-hover');
+        cards.forEach((card, index) => {
+            card.style.opacity = '0';
+            card.style.transform = 'translateY(20px)';
+
+            setTimeout(() => {
+                card.style.transition = 'all 0.5s ease';
+                card.style.opacity = '1';
+                card.style.transform = 'translateY(0)';
+            }, index * 200);
+        });
+    });
+</script>
 </body>
 </html>
