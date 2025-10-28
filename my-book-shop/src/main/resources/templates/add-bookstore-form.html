@@ -54,7 +54,7 @@
                     <h4 class="mb-0">Создание нового магазина</h4>
                 </div>
                 <div class="card-body">
-                    <form id="storeForm" th:action="@{/stores/create}" method="post">
+                    <form id="storeForm" th:action="@{/bookstores/saveBookStore}" method="post">
                         <!-- Основная информация о магазине -->
                         <div class="row mb-4">
                             <div class="col-md-6">
@@ -94,6 +94,7 @@
                         <!-- Скрытые поля для передачи данных о книгах -->
                         <div id="booksDataContainer" style="display: none;">
                             <!-- Данные о книгах будут добавляться здесь как hidden inputs -->
+                            <input type="hidden" th:value="${store?.id}"/>
                         </div>
 
                         <div id="booksContainer">
