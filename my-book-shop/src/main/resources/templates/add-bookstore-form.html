@@ -455,6 +455,67 @@
         }
     }
 
+    function addBookToAvailableList(book) {
+        const container = document.getElementById('existingBooksList');
+
+        // Проверяем, что контейнер существует
+        if (!container) {
+            console.log('Контейнер списка книг не найден (возможно, модальное окно закрыто)');
+            return;
+        }
+
+        // Удаляем сообщение "Книги не найдены", если оно есть
+        const noBooksMessage = container.querySelector('.text-center.text-muted');
+        if (noBooksMessage) {
+            noBooksMessage.remove();
+        }
+
+        // Создаем новый элемент книги
+        const bookElement = document.createElement('div');
+        bookElement.className = 'existing-book-item border-bottom p-3';
+        bookElement.innerHTML = `
+            <div class="row align-items-center">
+                <div class="col-md-6">
+                    <h6 class="mb-1 existing-book-title">${book.title || 'Без названия'}</h6>
+                    <small class="text-muted existing-book-author">${book.author || 'Автор не указан'}</small>
+                    <br>
+                </div>
+                <div class="col-md-2">
+                    <span class="existing-book-price fw-bold">${(book.price || 0).toFixed(2)} руб.</span>
+                </div>
+                <div class="col-md-2">
+                    <button type="button" class="btn btn-primary btn-sm w-100 add-existing-book"
+                            data-book-id="${book.id}"
+                            data-book-title="${book.title}"
+                            data-book-author="${book.author}"
+                            data-book-price="${book.price}">
+                        Добавить
+                    </button>
+                </div>
+            </div>
+        `;
+
+        // Добавляем обработчик для кнопки "Добавить"
+        const addButton = bookElement.querySelector('.add-existing-book');
+        addButton.addEventListener('click', function() {
+            const bookData = {
+                id: this.getAttribute('data-book-id'),
+                title: this.getAttribute('data-book-title'),
+                author: this.getAttribute('data-book-author'),
+                price: parseFloat(this.getAttribute('data-book-price'))
+            };
+            addBookToStore(bookData);
+
+            const modal = bootstrap.Modal.getInstance(document.getElementById('existingBooksModal'));
+            modal.hide();
+        });
+
+        // Добавляем книгу в начало списка
+        container.insertBefore(bookElement, container.firstChild);
+
+        console.log('Новая книга добавлена в список доступных');
+    }
+
     // Функция добавления книги в магазин
     function addBookToStore(bookData) {
         // Проверяем, не добавлена ли книга уже
