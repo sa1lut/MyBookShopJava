@@ -23,6 +23,6 @@ public class Book {
     private Double price;
 
     @ManyToOne
-    @JoinColumn(name = "book_store_id")
-    private Bookstore bookstore;
+    @JoinColumn(name = "book_list_id")
+    private BookList booklist;
 }

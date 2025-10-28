@@ -23,13 +23,13 @@ public class User {
     @Column(nullable = false)
     private String password;
 
-    @ManyToOne
-    @JoinColumn(name = "role_id")
-    private Role role;
-
     @Column(name = "firstName")
     private String firstName;
 
     @Column(name = "lastName")
     private String lastName;
+
+    @ManyToOne
+    @JoinColumn(name = "role_id")
+    private Role role;
 }

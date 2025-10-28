@@ -1,5 +1,6 @@
 package ru.BookShop.my_book_shop.entity;
 
+
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
@@ -7,24 +8,25 @@ import lombok.Setter;
 import java.util.ArrayList;
 import java.util.List;
 
-
 @Getter
 @Setter
 @Entity
-@Table(name = "bookstore")
-public class Bookstore {
+@Table(name = "bookList")
+public class BookList {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
     @Column(nullable = false)
-    private String name;
+    private Integer quantity;
 
     @Column(nullable = false)
-    private String address;
+    private Double totalPrice;
 
-    private String phone;
+    @OneToMany(mappedBy = "booklist")
+    private List<Book> books = new ArrayList<>();
 
-    @OneToMany(mappedBy = "bookstore")
-    private List<BookList> booklist = new ArrayList<>();
+    @ManyToOne
+    @JoinColumn(name = "book_store_id")
+    private Bookstore bookstore;
 }
