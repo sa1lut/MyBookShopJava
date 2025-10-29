@@ -12,8 +12,9 @@ import java.util.Optional;
 
 public interface BookstoreService {
 
-    void saveBookStore(Bookstore bookStore);
-    void saveBookStore(BookStoreDto bookStoreDto, BookItemsListDto bookItemsListDto, BookListDto bookListDto);
+    void saveBookStore(BookStoreDto bookStoreDto);
+
+    void saveBookStore(BookStoreDto bookStoreDto, BookListDto bookListDto);
 
     List<Bookstore> getBookstoresForUser();
 

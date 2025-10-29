@@ -17,7 +17,6 @@ public class BookItemsListDto {
     private Double price;
     @NotNull
     private Integer quantity;
-    private Book book;
 
     @Override
     public String toString() {

@@ -54,14 +54,19 @@ public class BookstoreController {
                                 @ModelAttribute BookListDto bookListDto,
                                 BindingResult result,
                                 Model model) {
-        System.out.println(bookStoreDto.toString());
-        System.out.println(bookListDto.toString());
         if (result.hasErrors()) {
-            model.addAttribute("bookStore", bookStoreDto);
-            model.addAttribute("bookList", bookListDto);
+            model.addAttribute("availableBooks", bookService.getBooksForUser());
+            model.addAttribute("bookstore", bookStoreDto);
+            model.addAttribute("book", bookListDto);
             return "redirect:/bookstores/new";
         }
-//        bookStoreService.saveBookStore(bookStoreDto, bookItemsListDto, bookListDto);
+
+        if (bookListDto.getTotalPrice() == null){
+            bookStoreService.saveBookStore(bookStoreDto);
+        } else {
+            bookStoreService.saveBookStore(bookStoreDto, bookListDto);
+        }
+
         return "redirect:/bookstores/list";
     }
 
