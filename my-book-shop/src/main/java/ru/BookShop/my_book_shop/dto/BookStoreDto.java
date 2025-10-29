@@ -20,4 +20,13 @@ public class BookStoreDto {
     private String address;
     @NotNull
     private String phone;
+
+    @Override
+    public String toString() {
+        return "BookStoreRequest{" +
+                "name=" + name +
+                ", address=" + address +
+                ", phone=" + phone +
+                '}';
+    }
 }

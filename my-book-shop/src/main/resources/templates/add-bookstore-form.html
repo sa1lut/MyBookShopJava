@@ -148,6 +148,7 @@
                                     <div class="d-flex justify-content-between">
                                         <span>Общая стоимость:</span>
                                         <span id="totalAmount" th:text="${#numbers.formatDecimal(store?.totalCost ?: 0, 1, 2)} + ' руб.'">0.00 руб.</span>
+                                        <input id="totalPrice" name="totalPrice" type="hidden" th:value="${store?.totalPrice}"/>
                                     </div>
                                 </div>
                                 <div class="col-md-4">
@@ -605,7 +606,7 @@
     function updateBooksDataContainer() {
         const container = document.getElementById('booksDataContainer');
         container.innerHTML = '';
-
+        index = 0;
         selectedBooks.forEach((bookData, bookId) => {
             const bookElement = bookData.element;
             const price = bookElement.querySelector('.book-price').value;
@@ -613,21 +614,22 @@
 
             const bookIdInput = document.createElement('input');
             bookIdInput.type = 'hidden';
-            bookIdInput.name = 'bookItems[' + bookId + '].bookId';
+            bookIdInput.name = 'bookItems[' + index + '].bookId';
             bookIdInput.value = bookId;
             container.appendChild(bookIdInput);
 
             const priceInput = document.createElement('input');
             priceInput.type = 'hidden';
-            priceInput.name = 'bookItems[' + bookId + '].price';
+            priceInput.name = 'bookItems[' + index + '].price';
             priceInput.value = price;
             container.appendChild(priceInput);
 
             const quantityInput = document.createElement('input');
             quantityInput.type = 'hidden';
-            quantityInput.name = 'bookItems[' + bookId + '].quantity';
+            quantityInput.name = 'bookItems[' + index + '].quantity';
             quantityInput.value = quantity;
             container.appendChild(quantityInput);
+            index++;
         });
     }
 
@@ -670,6 +672,8 @@
         });
 
         document.getElementById('totalAmount').textContent = totalAmount.toFixed(2) + ' руб.';
+        document.getElementById('totalPrice').value = totalAmount;
+        console.log(document.getElementById('totalPrice').value);
         document.getElementById('totalQuantity').textContent = totalQuantity + ' шт.';
         document.getElementById('bookCount').textContent = 'Позиций: ' + validBooks;
     }

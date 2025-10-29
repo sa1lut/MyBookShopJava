@@ -3,6 +3,8 @@ package ru.BookShop.my_book_shop.controller;
 import jakarta.validation.Valid;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.servlet.ModelAndView;
+import ru.BookShop.my_book_shop.dto.BookItemsListDto;
+import ru.BookShop.my_book_shop.dto.BookListDto;
 import ru.BookShop.my_book_shop.dto.BookStoreDto;
 import ru.BookShop.my_book_shop.entity.Book;
 import ru.BookShop.my_book_shop.entity.Bookstore;
@@ -13,6 +15,7 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 import ru.BookShop.my_book_shop.service.BookstoreService;
 
+import java.util.List;
 import java.util.Optional;
 
 @Controller
@@ -37,7 +40,7 @@ public class BookstoreController {
     }
 
     @GetMapping("/new")
-    public ModelAndView showBookstoreForm(Model model) {
+    public ModelAndView showBookstoreForm() {
         ModelAndView mav = new ModelAndView("add-bookstore-form");
         mav.addObject("title", "Создать магазин");
         mav.addObject("availableBooks", bookService.getBooksForUser());
@@ -47,14 +50,18 @@ public class BookstoreController {
     }
 
     @PostMapping("/saveBookStore")
-    public String saveBookstore(@Valid @ModelAttribute("bookStore") BookStoreDto bookStoreDtoDto,
+    public String saveBookstore(@Valid @ModelAttribute BookStoreDto bookStoreDto,
+                                @ModelAttribute BookListDto bookListDto,
                                 BindingResult result,
                                 Model model) {
+        System.out.println(bookStoreDto.toString());
+        System.out.println(bookListDto.toString());
         if (result.hasErrors()) {
-            model.addAttribute("bookStore", bookStoreDtoDto);
+            model.addAttribute("bookStore", bookStoreDto);
+            model.addAttribute("bookList", bookListDto);
             return "redirect:/bookstores/new";
         }
-        bookStoreService.saveBookStore(bookStoreDtoDto);
+//        bookStoreService.saveBookStore(bookStoreDto, bookItemsListDto, bookListDto);
         return "redirect:/bookstores/list";
     }
 
