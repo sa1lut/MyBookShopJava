@@ -23,9 +23,8 @@ public class BookItemsList {
     @Column(nullable = false)
     private Double totalPrice;
 
-    @OneToOne
-    @JoinColumn(name = "book_id")
-    private Book book;
+    @ManyToMany
+    private List<Book> books = new ArrayList<>();
 
     @ManyToOne
     @JoinColumn(name = "bookLists")

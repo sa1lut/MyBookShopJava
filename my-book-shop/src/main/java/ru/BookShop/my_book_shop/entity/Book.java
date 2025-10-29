@@ -4,6 +4,9 @@ import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
 
+import java.util.ArrayList;
+import java.util.List;
+
 @Getter
 @Setter
 @Entity
@@ -22,7 +25,6 @@ public class Book {
     @Column(nullable = false)
     private Double price;
 
-    @OneToOne
-    @JoinColumn(name = "book_list_id")
-    private BookList booklist;
+    @ManyToMany(mappedBy = "books")
+    private List<BookItemsList> bookItemsLists = new ArrayList<>();
 }
