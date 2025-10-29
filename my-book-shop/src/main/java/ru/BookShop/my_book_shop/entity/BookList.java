@@ -1,6 +1,5 @@
 package ru.BookShop.my_book_shop.entity;
 
-
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
@@ -18,13 +17,10 @@ public class BookList {
     private Long id;
 
     @Column(nullable = false)
-    private Integer quantity;
-
-    @Column(nullable = false)
     private Double totalPrice;
 
-    @OneToMany(mappedBy = "booklist")
-    private List<Book> books = new ArrayList<>();
+    @OneToMany(mappedBy = "bookList")
+    private List<BookItemsList> bookItemsLists = new ArrayList<>();
 
     @ManyToOne
     @JoinColumn(name = "book_store_id")

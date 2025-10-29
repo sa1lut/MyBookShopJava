@@ -22,7 +22,7 @@ public class Book {
     @Column(nullable = false)
     private Double price;
 
-    @ManyToOne
+    @OneToOne
     @JoinColumn(name = "book_list_id")
     private BookList booklist;
 }
