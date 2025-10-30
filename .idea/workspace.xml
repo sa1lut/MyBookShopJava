@@ -5,10 +5,14 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="1a26c265-685a-49bf-b7cf-9efe11ac8486" name="Changes" comment="move lr1">
-      <change afterPath="$PROJECT_DIR$/MySecondTestAppSpringBoot/src/main/java/ru/saltanov/MySecondTestAppSpringBoot/controller/MyController.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/MySecondTestAppSpringBoot/src/main/java/ru/saltanov/MySecondTestAppSpringBoot/model/Request.java" beforeDir="false" afterPath="$PROJECT_DIR$/MySecondTestAppSpringBoot/src/main/java/ru/saltanov/MySecondTestAppSpringBoot/model/Request.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/MySecondTestAppSpringBoot/src/main/java/ru/saltanov/MySecondTestAppSpringBoot/model/Response.java" beforeDir="false" afterPath="$PROJECT_DIR$/MySecondTestAppSpringBoot/src/main/java/ru/saltanov/MySecondTestAppSpringBoot/model/Response.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/MySecondTestAppSpringBoot/src/main/resources/application.properties" beforeDir="false" afterPath="$PROJECT_DIR$/MySecondTestAppSpringBoot/src/main/resources/application.properties" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/my-book-shop/db/bookshop.mv.db" beforeDir="false" afterPath="$PROJECT_DIR$/my-book-shop/db/bookshop.mv.db" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/my-book-shop/db/bookshop.trace.db" beforeDir="false" afterPath="$PROJECT_DIR$/my-book-shop/db/bookshop.trace.db" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/my-book-shop/src/main/java/ru/BookShop/my_book_shop/controller/BookstoreController.java" beforeDir="false" afterPath="$PROJECT_DIR$/my-book-shop/src/main/java/ru/BookShop/my_book_shop/controller/BookstoreController.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/my-book-shop/src/main/java/ru/BookShop/my_book_shop/dto/BookDto.java" beforeDir="false" afterPath="$PROJECT_DIR$/my-book-shop/src/main/java/ru/BookShop/my_book_shop/dto/BookDto.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/my-book-shop/src/main/java/ru/BookShop/my_book_shop/dto/BookStoreDto.java" beforeDir="false" afterPath="$PROJECT_DIR$/my-book-shop/src/main/java/ru/BookShop/my_book_shop/dto/BookStoreDto.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/my-book-shop/src/main/java/ru/BookShop/my_book_shop/service/BookstoreService.java" beforeDir="false" afterPath="$PROJECT_DIR$/my-book-shop/src/main/java/ru/BookShop/my_book_shop/service/BookstoreService.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/my-book-shop/src/main/java/ru/BookShop/my_book_shop/service/BookstoreServiceImpl.java" beforeDir="false" afterPath="$PROJECT_DIR$/my-book-shop/src/main/java/ru/BookShop/my_book_shop/service/BookstoreServiceImpl.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/my-book-shop/src/main/resources/templates/add-bookstore-form.html" beforeDir="false" afterPath="$PROJECT_DIR$/my-book-shop/src/main/resources/templates/add-bookstore-form.html" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -31,12 +35,12 @@
     &quot;assignee&quot;: &quot;sa1lut&quot;
   }
 }</component>
-  <component name="GithubPullRequestsUISettings">{
-  &quot;selectedUrlAndAccountId&quot;: {
-    &quot;url&quot;: &quot;https://github.com/sa1lut/JavaSecondCourse&quot;,
-    &quot;accountId&quot;: &quot;e6071eb3-bcda-4983-bdcb-000ab6b4434c&quot;
+  <component name="GithubPullRequestsUISettings"><![CDATA[{
+  "selectedUrlAndAccountId": {
+    "url": "https://github.com/sa1lut/MyBookShopJava.git",
+    "accountId": "e6071eb3-bcda-4983-bdcb-000ab6b4434c"
   }
-}</component>
+}]]></component>
   <component name="MavenImportPreferences">
     <option name="generalSettings">
       <MavenGeneralSettings>
@@ -68,8 +72,9 @@
     "RunOnceActivity.ShowReadmeOnStart": "true",
     "RunOnceActivity.git.unshallow": "true",
     "git-widget-placeholder": "main",
+    "ignore.virus.scanning.warn.message": "true",
     "kotlin-language-version-configured": "true",
-    "last_opened_file_path": "C:/Users/salat/Documents/JavaSecondCourse/MySecondTestAppSpringBoot",
+    "last_opened_file_path": "C:/Users/salat/Documents/MyBookShopJava/my-book-shop",
     "onboarding.tips.debug.path": "C:/Users/salat/Documents/JavaSecondCourse/MySecondTestAppSpringBoot/src/main/java/org/example/Main.java",
     "settings.editor.selected.configurable": "reference.projectsettings.compiler.javacompiler"
   }

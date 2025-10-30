@@ -10,19 +10,20 @@ import java.util.List;
 @Getter
 @Setter
 @Entity
-@Table(name = "bookList")
-public class BookList {
+@Table(name = "bookBookStoreList")
+public class BookBookStoreList {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
     @Column(nullable = false)
-    private Double totalPrice;
+    private Integer quantity;
 
-    @OneToMany(mappedBy = "bookList")
-    private List<BookItemsList> bookItemsLists = new ArrayList<>();
-
-    @ManyToOne
-    @JoinColumn(name = "book_store_id")
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "bookstore_id", nullable = false)
     private Bookstore bookstore;
+
+    @ManyToOne(fetch = FetchType.EAGER)
+    @JoinColumn(name = "book_id", nullable = false)
+    private Book book;
 }

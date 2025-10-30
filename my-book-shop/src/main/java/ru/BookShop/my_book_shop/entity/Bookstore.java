@@ -5,7 +5,9 @@ import lombok.Getter;
 import lombok.Setter;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 
 @Getter
@@ -25,6 +27,6 @@ public class Bookstore {
 
     private String phone;
 
-    @OneToMany(mappedBy = "bookstore")
-    private List<BookList> booklist = new ArrayList<>();
+    @OneToMany(mappedBy = "bookstore", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<BookBookStoreList> bookBookStoreListSet = new ArrayList<>();
 }

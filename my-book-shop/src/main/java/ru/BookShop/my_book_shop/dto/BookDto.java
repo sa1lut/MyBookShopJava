@@ -20,4 +20,8 @@ public class BookDto {
     private String author;
     @NotNull
     private Double price;
+
+    private Integer quantity;
+
+    private Long bookItemId;
 }

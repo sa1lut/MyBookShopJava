@@ -1,22 +1,19 @@
 package ru.BookShop.my_book_shop.service;
 
+import jakarta.persistence.EntityNotFoundException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import ru.BookShop.my_book_shop.dto.BookDto;
 import ru.BookShop.my_book_shop.dto.BookItemsListDto;
 import ru.BookShop.my_book_shop.dto.BookListDto;
-import ru.BookShop.my_book_shop.dto.BookStoreDto;
 import ru.BookShop.my_book_shop.entity.Book;
-import ru.BookShop.my_book_shop.entity.BookItemsList;
-import ru.BookShop.my_book_shop.entity.BookList;
+import ru.BookShop.my_book_shop.entity.BookBookStoreList;
 import ru.BookShop.my_book_shop.entity.Bookstore;
-import ru.BookShop.my_book_shop.repository.BookItemsListRepository;
-import ru.BookShop.my_book_shop.repository.BookListRepository;
+import ru.BookShop.my_book_shop.repository.BookBookStoreListRepository;
 import ru.BookShop.my_book_shop.repository.BookRepository;
 import ru.BookShop.my_book_shop.repository.BookstoreRepository;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 
 @Service
 @Transactional
@@ -24,61 +21,49 @@ public class BookstoreServiceImpl implements BookstoreService {
 
     private final BookstoreRepository bookstoreRepository;
     private final BookRepository bookRepository;
-    private final BookItemsListRepository bookItemsListRepository;
-    private final BookListRepository bookListRepository;
+    private final BookBookStoreListRepository bookBookStoreListRepository;
 //    private static final Logger logger = LoggerFactory.getLogger(BookstoreService.class);
 
     public BookstoreServiceImpl(BookstoreRepository bookstoreRepository, BookRepository bookRepository,
-                                BookItemsListRepository bookItemsListRepository, BookListRepository bookListRepository) {
+                                BookBookStoreListRepository bookBookStoreListRepository) {
         this.bookstoreRepository = bookstoreRepository;
         this.bookRepository = bookRepository;
-        this.bookItemsListRepository = bookItemsListRepository;
-        this.bookListRepository = bookListRepository;
+        this.bookBookStoreListRepository = bookBookStoreListRepository;
     }
 
     @Override
-    public void saveBookStore(BookStoreDto bookStoreDto) {
-        Bookstore bookstore = new Bookstore();
-        bookstore.setName(bookStoreDto.getName());
-        bookstore.setPhone(bookStoreDto.getPhone());
-        bookstore.setAddress(bookStoreDto.getAddress());
+    public void saveBookStore(Bookstore bookstore) {
         bookstoreRepository.save(bookstore);
     }
 
     @Override
-    public void saveBookStore(BookStoreDto bookStoreDto, BookListDto bookListDto) {
-        Bookstore bookstore = new Bookstore();
-        bookstore.setName(bookStoreDto.getName());
-        bookstore.setAddress(bookStoreDto.getAddress());
-        bookstore.setPhone(bookStoreDto.getPhone());
-
-        BookList bookList = new BookList();
-        bookList.setBookstore(bookstore);
-        bookList.setTotalPrice(bookListDto.getTotalPrice());
-
-        List<Book> books = new ArrayList<>();
-        List<BookItemsList> bookItemsLists = new ArrayList<>();
-        for (BookItemsListDto bookItemList : bookListDto.getBookItems()) {
-            BookItemsList bookItemListNew = new BookItemsList();
-            bookItemListNew.setQuantity(bookItemList.getQuantity());
-            bookItemListNew.setTotalPrice(bookItemList.getPrice());
-            Optional<Book> optionalBook = bookRepository.findById(bookItemList.getBookId());
-            Book book = new Book();
-
-            if (optionalBook.isPresent()) {
-                book = optionalBook.get();
+    public void saveBookStore(Bookstore bookstore, BookListDto bookListDto) {
+        try {
+            for (Long delId : bookListDto.getDeletedBookItems()) {
+                bookBookStoreListRepository.deleteById(delId);
+                System.out.println("Deleted!");
             }
-            books.add(book);
-            bookItemListNew.setBooks(books);
-            bookItemListNew.setBookList(bookList);
-            bookItemsLists.add(bookItemListNew);
-            book.setBookItemsLists(bookItemsLists);
-            bookRepository.save(book);
-            bookItemsListRepository.save(bookItemListNew);
-        }
+        } catch (Exception _){}
 
         bookstoreRepository.save(bookstore);
-        bookListRepository.save(bookList);
+
+        for (BookItemsListDto bookItemList : bookListDto.getBookItems()) {
+            // Создаем новый ТОЛЬКО если ID null, иначе используем существующий
+            BookBookStoreList bookItemListNew = bookItemList.getBookItemId() != null
+                    ? bookBookStoreListRepository
+                    .findById(bookItemList.getBookItemId())
+                    .orElseThrow(() -> new EntityNotFoundException(
+                            "BookBookStoreList not found with id: " + bookItemList.getBookItemId()
+                    ))
+                    : new BookBookStoreList();
+
+            bookItemListNew.setQuantity(bookItemList.getQuantity());
+            bookItemListNew.setBook(bookRepository.findById(bookItemList.getBookId())
+                    .orElseThrow(() -> new EntityNotFoundException("Book not found")));
+            bookItemListNew.setBookstore(bookstore);
+
+            bookBookStoreListRepository.save(bookItemListNew);
+        }
     }
 
 
@@ -101,5 +86,67 @@ public class BookstoreServiceImpl implements BookstoreService {
 
     public Optional<Bookstore> findById(Long id) {
         return bookstoreRepository.findById(id);
+    }
+
+//    public BookItemsList getByBookStoreId(Long id) {
+//
+//        BookList bookList = null;
+//        BookItemsList bookItemsList = null;
+//        try {
+//            bookList = bookListRepository.getReferenceById(id);
+//            if (!bookListRepository.existsById(id)) {
+//                return null;
+//            }
+//            Long idBookList = bookList.getId();
+//            bookItemsList = bookItemsListRepository.getReferenceById(idBookList);
+//            return bookItemsList;
+//        } catch (EntityNotFoundException e) {
+//            return null;
+//        }
+//    }
+
+    public List<BookDto> getBooksWithQuantity(Long bookStoreId) {
+        // Получаем информацию о книжном магазине с количеством
+        Bookstore bookStore = bookstoreRepository.getById(bookStoreId);
+
+        // Получаем список книг с их количеством
+        List<BookDto> bookDto = new ArrayList<>();
+
+        // Предполагая, что у BookStore есть метод getBookQuantities()
+        // который возвращает Map<Book, Integer> или List<BookQuantity>
+        for (BookBookStoreList bookBookStoreList : bookStore.getBookBookStoreListSet()) {
+            Integer quantity = bookBookStoreList.getQuantity(); // или аналогичный метод
+            Book book = bookBookStoreList.getBook();
+            BookDto bookWithQuantity = new BookDto(
+                    book.getId(),
+                    book.getTitle(),
+                    book.getAuthor(),
+                    book.getPrice(),
+                    quantity,
+                    bookBookStoreList.getId()
+            );
+            bookDto.add(bookWithQuantity);
+        }
+
+        return bookDto;
+    }
+
+    public Double getTotalPrice(List<BookDto> bookDtos) {
+        Double totalPrice = 0.0;
+        for (BookDto bookDto : bookDtos) {
+            totalPrice += bookDto.getPrice();
+        }
+
+        return  totalPrice;
+    }
+
+    public Integer getTotalQuantity(List<BookDto> bookDtos) {
+        Integer totalQuantity = 0;
+
+        for (BookDto bookDto : bookDtos) {
+            totalQuantity += bookDto.getQuantity();
+        }
+
+        return totalQuantity;
     }
 }

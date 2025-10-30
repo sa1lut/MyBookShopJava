@@ -48,14 +48,14 @@ public class BookController {
     }
 
     @PostMapping("/saveBook")
-    public String saveBook(@Valid @ModelAttribute("book") BookDto bookDto,
+    public String saveBook(@Valid @ModelAttribute("book") Book book,
                            BindingResult result,
                            Model model) {
         if (result.hasErrors()) {
-            model.addAttribute("book", bookDto);
+            model.addAttribute("book", book);
             return "redirect:/books/new";
         }
-        bookService.saveBook(bookDto);
+        bookService.saveBook(book);
         return "redirect:/books/list";
     }
 

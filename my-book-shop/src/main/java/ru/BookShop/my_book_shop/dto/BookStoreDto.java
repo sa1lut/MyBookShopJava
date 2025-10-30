@@ -8,6 +8,8 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
+import java.util.List;
+
 @Getter
 @Setter
 @NoArgsConstructor
@@ -21,9 +23,16 @@ public class BookStoreDto {
     @NotNull
     private String phone;
 
+    private Double totalPrice;
+
+    private Integer totalQuantity;
+
+    private List<BookDto> bookItems;
+
     @Override
     public String toString() {
         return "BookStoreRequest{" +
+                "id="+ id +
                 "name=" + name +
                 ", address=" + address +
                 ", phone=" + phone +

@@ -1,24 +1,29 @@
 package ru.BookShop.my_book_shop.service;
 
 import ru.BookShop.my_book_shop.dto.BookDto;
-import ru.BookShop.my_book_shop.dto.BookItemsListDto;
 import ru.BookShop.my_book_shop.dto.BookListDto;
-import ru.BookShop.my_book_shop.dto.BookStoreDto;
 import ru.BookShop.my_book_shop.entity.Bookstore;
-import ru.BookShop.my_book_shop.entity.User;
 
 import java.util.List;
 import java.util.Optional;
 
 public interface BookstoreService {
 
-    void saveBookStore(BookStoreDto bookStoreDto);
+    void saveBookStore(Bookstore bookstore);
 
-    void saveBookStore(BookStoreDto bookStoreDto, BookListDto bookListDto);
+    void saveBookStore(Bookstore bookstore, BookListDto bookListDto);
 
     List<Bookstore> getBookstoresForUser();
+
+//    BookItemsList getByBookStoreId(Long id);
 
     void deleteBookstore(Long id);
 
     Optional<Bookstore> findById(Long id);
+
+    List<BookDto> getBooksWithQuantity(Long bookStoreId);
+
+    Integer getTotalQuantity(List<BookDto> bookDtos);
+
+    Double getTotalPrice(List<BookDto> bookDtos);
 }

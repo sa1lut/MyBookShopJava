@@ -3,7 +3,7 @@ package ru.BookShop.my_book_shop.controller;
 import jakarta.validation.Valid;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.servlet.ModelAndView;
-import ru.BookShop.my_book_shop.dto.BookItemsListDto;
+import ru.BookShop.my_book_shop.dto.BookDto;
 import ru.BookShop.my_book_shop.dto.BookListDto;
 import ru.BookShop.my_book_shop.dto.BookStoreDto;
 import ru.BookShop.my_book_shop.entity.Book;
@@ -15,6 +15,7 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 import ru.BookShop.my_book_shop.service.BookstoreService;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
@@ -44,27 +45,29 @@ public class BookstoreController {
         ModelAndView mav = new ModelAndView("add-bookstore-form");
         mav.addObject("title", "Создать магазин");
         mav.addObject("availableBooks", bookService.getBooksForUser());
-        mav.addObject("bookstore", new Bookstore());
+        mav.addObject("store", new BookStoreDto());
         mav.addObject("book", new Book());
         return mav;
     }
 
     @PostMapping("/saveBookStore")
-    public String saveBookstore(@Valid @ModelAttribute BookStoreDto bookStoreDto,
+    public String saveBookstore(@ModelAttribute Bookstore bookstore,
                                 @ModelAttribute BookListDto bookListDto,
                                 BindingResult result,
                                 Model model) {
         if (result.hasErrors()) {
             model.addAttribute("availableBooks", bookService.getBooksForUser());
-            model.addAttribute("bookstore", bookStoreDto);
+            model.addAttribute("store", bookstore);
             model.addAttribute("book", bookListDto);
             return "redirect:/bookstores/new";
         }
 
-        if (bookListDto.getTotalPrice() == null){
-            bookStoreService.saveBookStore(bookStoreDto);
+        System.out.println(bookListDto);
+
+        if (bookListDto.getBookItems() == null){
+            bookStoreService.saveBookStore(bookstore);
         } else {
-            bookStoreService.saveBookStore(bookStoreDto, bookListDto);
+            bookStoreService.saveBookStore(bookstore, bookListDto);
         }
 
         return "redirect:/bookstores/list";
@@ -78,8 +81,27 @@ public class BookstoreController {
         if (optionalBookstore.isPresent()) {
             bookStore = optionalBookstore.get();
         }
+        Double totalPrice = 0.0;
+        Integer totalQuantity = 0;
+//        BookItemsList bookItemsList = bookStoreService.getByBookStoreId(bookStoreId);
+        List<BookDto> bookDtos = new ArrayList<>();
+//        System.out.println(bookItemsList);
+//        if (bookItemsList != null) {
+            bookDtos = bookStoreService.getBooksWithQuantity(bookStore.getId());
+            totalPrice = bookStoreService.getTotalPrice(bookDtos);
+            totalQuantity = bookStoreService.getTotalQuantity(bookDtos);
+//        }
+
+        BookStoreDto bookStoreDto = new BookStoreDto(bookStore.getId(), bookStore.getName(),
+                bookStore.getAddress(), bookStore.getPhone(), totalPrice,
+                totalQuantity, bookDtos);
+
+
         mav.addObject("title", "Изменить магазин");
-        mav.addObject("bookStore", bookStore);
+        mav.addObject("store", bookStoreDto);
+//        mav.addObject("bookItems", bookDtos);
+        mav.addObject("availableBooks", bookService.getBooksForUser());
+        mav.addObject("book", new Book());
 
         return mav;
     }

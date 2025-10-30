@@ -55,6 +55,9 @@
                 </div>
                 <div class="card-body">
                     <form id="storeForm" th:action="@{/bookstores/saveBookStore}" method="post">
+                        <!-- Скрытое поле для ID магазина -->
+                        <input type="hidden" name="id" th:value="${store?.id}"/>
+
                         <!-- Основная информация о магазине -->
                         <div class="row mb-4">
                             <div class="col-md-6">
@@ -92,34 +95,42 @@
                         </div>
 
                         <!-- Скрытые поля для передачи данных о книгах -->
-                        <div id="booksDataContainer" style="display: none;">
+                        <div id="booksDataContainer">
                             <!-- Данные о книгах будут добавляться здесь как hidden inputs -->
-                            <input type="hidden" th:value="${store?.id}"/>
+                        </div>
+
+                        <!-- Скрытые поля для удаленных книг -->
+                        <div id="deletedBooksContainer">
+                            <!-- ID удаленных книг из промежуточной таблицы будут добавляться здесь -->
                         </div>
 
                         <div id="booksContainer">
                             <!-- Книги будут добавляться здесь динамически -->
-                            <div th:each="bookItem, status : ${store?.bookItems}" class="book-item">
+                            <div th:each="bookItem, status : ${store?.bookItems}" class="book-item" th:data-book-id="${bookItem.id}">
                                 <div class="row align-items-start">
                                     <div class="col-md-5">
                                         <div class="mb-3">
                                             <label class="form-label">Название книги *</label>
-                                            <input type="text" class="form-control book-title" th:value="${bookItem.book.title}" readonly>
-                                            <input type="hidden" class="book-id" th:value="${bookItem.book.id}">
-                                            <small class="text-muted book-author" th:text="${bookItem.book.author}"></small>
+                                            <input type="text" class="form-control book-title" th:value="${bookItem.title}" readonly>
+                                            <input type="hidden" class="book-id" th:value="${bookItem.id}">
+                                            <!-- ID из промежуточной таблицы -->
+                                            <input type="hidden" class="book-item-id" th:value="${bookItem.bookItemId}">
+                                            <small class="text-muted book-author" th:text="${bookItem.author}"></small>
                                         </div>
                                     </div>
                                     <div class="col-md-2">
                                         <div class="mb-3">
                                             <label class="form-label">Цена (руб.) *</label>
-                                            <input type="number" class="form-control book-price" th:value="${bookItem.price}" step="0.01" min="0" readonly>
+                                            <input type="number" class="form-control book-price" th:value="${bookItem.price}" step="0.01" min="0">
                                         </div>
                                     </div>
                                     <div class="col-md-3">
                                         <div class="mb-3">
                                             <label class="form-label">Количество *</label>
                                             <div class="quantity-controls">
-                                                <input type="number" class="form-control quantity-input book-quantity" th:value="${bookItem.quantity}" min="1" readonly>
+                                                <button type="button" class="btn btn-outline-secondary btn-sm quantity-decrease">-</button>
+                                                <input type="number" class="form-control quantity-input book-quantity" th:value="${bookItem.quantity}" min="1">
+                                                <button type="button" class="btn btn-outline-secondary btn-sm quantity-increase">+</button>
                                             </div>
                                         </div>
                                     </div>
@@ -147,7 +158,7 @@
                                 <div class="col-md-4">
                                     <div class="d-flex justify-content-between">
                                         <span>Общая стоимость:</span>
-                                        <span id="totalAmount" th:text="${#numbers.formatDecimal(store?.totalCost ?: 0, 1, 2)} + ' руб.'">0.00 руб.</span>
+                                        <span id="totalAmount" th:text="${#numbers.formatDecimal(store?.totalPrice ?: 0, 1, 2)} + ' руб.'">0.00 руб.</span>
                                         <input id="totalPrice" name="totalPrice" type="hidden" th:value="${store?.totalPrice}"/>
                                     </div>
                                 </div>
@@ -171,7 +182,7 @@
                                 Очистить форму
                             </button>
                             <button type="submit" class="btn btn-primary">
-                                Создать магазин
+                                <span th:text="${store?.id} ? 'Обновить магазин' : 'Создать магазин'"></span>
                             </button>
                         </div>
                     </form>
@@ -212,10 +223,8 @@
             <div class="modal-footer">
                 <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Отмена</button>
                 <button type="button" class="btn btn-primary" id="saveNewBookBtn" onclick="saveNewBook()">
-                    <span class="spinner-border spinner-border-sm" role="status" style="display: none;"></span>
                     Сохранить книгу
                 </button>
-
             </div>
         </div>
     </div>
@@ -277,6 +286,8 @@
                     <label class="form-label">Название книги *</label>
                     <input type="text" class="form-control book-title" required readonly>
                     <input type="hidden" class="book-id">
+                    <!-- ID из промежуточной таблицы (пустое для новых книг) -->
+                    <input type="hidden" class="book-item-id" value="">
                     <small class="text-muted book-author"></small>
                 </div>
             </div>
@@ -322,11 +333,14 @@
 
     let bookCounter = 0;
     let selectedBooks = new Map();
+    let deletedBookItems = new Set(); // Множество для хранения ID удаленных книг из промежуточной таблицы
 
     // Инициализация формы
     document.addEventListener('DOMContentLoaded', function() {
         // Инициализация существующих книг из Thymeleaf
-        initializeExistingBooks();
+        initializeExistingBooksFromThymeleaf();
+        initializeEventListeners();
+        initializeModalBooks();
 
         // Обработчики для модального окна существующих книг
         document.getElementById('existingBooksModal').addEventListener('show.bs.modal', function() {
@@ -344,177 +358,125 @@
         });
     });
 
-    // Инициализация существующих книг из данных Thymeleaf
-    function initializeExistingBooks() {
-        const addButtons = document.querySelectorAll('.add-existing-book');
-        addButtons.forEach(button => {
-            button.addEventListener('click', function() {
-                const bookData = {
-                    id: this.getAttribute('data-book-id'),
-                    title: this.getAttribute('data-book-title'),
-                    author: this.getAttribute('data-book-author'),
-                    price: parseFloat(this.getAttribute('data-book-price'))
-                };
-                addBookToStore(bookData);
+    // Инициализация обработчиков событий для всех книг
+    function initializeEventListeners() {
+        // Делегирование событий для контейнера книг
+        document.getElementById('booksContainer').addEventListener('click', function(event) {
+            const bookItem = event.target.closest('.book-item');
+            if (!bookItem) return;
 
-                // Закрываем модальное окно
-                const modal = bootstrap.Modal.getInstance(document.getElementById('existingBooksModal'));
-                modal.hide();
-            });
-        });
-    }
-
-    // Функция сохранения новой книги через AJAX
-    async function saveNewBook() {
-        const form = document.getElementById('newBookForm');
-        const saveBtn = document.getElementById('saveNewBookBtn');
-        //const spinner = saveBtn.querySelector('.spinner-border');
-        const originalText = saveBtn.textContent;
-
-        // Валидация формы
-        if (!form.checkValidity()) {
-            form.reportValidity();
-            return;
-        }
-
-        // Подготавливаем данные книги
-        const bookData = {
-            title: document.getElementById('newBookTitle').value.trim(),
-            author: document.getElementById('newBookAuthor').value.trim(),
-            price: parseFloat(document.getElementById('newBookPrice').value)
-        };
-
-        // Дополнительная валидация на клиенте
-        if (!bookData.title) {
-            showAlert('newBookAlert', 'Введите название книги', 'danger');
-            return;
-        }
-
-        if (!bookData.author) {
-            showAlert('newBookAlert', 'Введите автора книги', 'danger');
-            return;
-        }
-
-        if (!bookData.price || bookData.price <= 0) {
-            showAlert('newBookAlert', 'Введите корректную цену', 'danger');
-            return;
-        }
-
-        // Показываем индикатор загрузки
-        saveBtn.disabled = true;
-        //spinner.style.display = 'inline-block';
-        saveBtn.innerHTML = '<span class="spinner-border spinner-border-sm" role="status"></span> Сохранение...';
-
-        try {
-            const response = await fetch('/books/create-ajax', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify(bookData)
-            });
-
-            const responseData = await response.json();
-
-            if (!response.ok) {
-                // Обработка ошибок валидации
-                if (response.status === 400) {
-                    const errorMessages = Object.values(responseData).join(', ');
-                    throw new Error(errorMessages || 'Ошибка валидации данных');
-                }
-                throw new Error(responseData.message || `Ошибка сервера: ${response.status}`);
+            // Обработка кнопок количества
+            if (event.target.classList.contains('quantity-decrease')) {
+                event.stopPropagation(); // предотвращаем всплытие
+                decreaseQuantity(bookItem);
+            } else if (event.target.classList.contains('quantity-increase')) {
+                event.stopPropagation(); // предотвращаем всплытие
+                increaseQuantity(bookItem);
+            } else if (event.target.classList.contains('btn-remove')) {
+                event.stopPropagation(); // предотвращаем всплытие
+                removeBook(bookItem);
             }
+        });
 
-            // Успешное сохранение
-            const savedBook = responseData;
+        // Обработка изменений в полях ввода
+        document.getElementById('booksContainer').addEventListener('input', function(event) {
+            if (event.target.classList.contains('book-quantity') || event.target.classList.contains('book-price')) {
+                const bookItem = event.target.closest('.book-item');
+                updateBookItem(bookItem);
+            }
+        });
+    }
 
-            // Автоматически добавляем новую книгу в магазин
-            addBookToStore({
-                id: savedBook.id,
-                title: savedBook.title,
-                author: savedBook.author,
-                price: savedBook.price,
-                quantity: 1
+    // Инициализация книг в модальном окне
+    function initializeModalBooks() {
+        const existingBooksList = document.getElementById('existingBooksList');
+        if (existingBooksList) {
+            existingBooksList.addEventListener('click', function(event) {
+                if (event.target.classList.contains('add-existing-book')) {
+                    const button = event.target;
+                    const bookData = {
+                        id: button.getAttribute('data-book-id'),
+                        title: button.getAttribute('data-book-title'),
+                        author: button.getAttribute('data-book-author'),
+                        price: parseFloat(button.getAttribute('data-book-price'))
+                    };
+                    addBookToStore(bookData);
+
+                    // Закрываем модальное окно
+                    const modal = bootstrap.Modal.getInstance(document.getElementById('existingBooksModal'));
+                    modal.hide();
+                }
             });
-
-            // Очищаем форму
-            document.getElementById('newBookForm').reset();
-
-            // Закрываем модальное окно через 1 секунду
-        setTimeout(() => {
-            const modal = bootstrap.Modal.getInstance(document.getElementById('newBookModal'));
-            modal.hide();
-        }, 1000);
-
-        } catch (error) {
-            console.error('Ошибка при сохранении книги:', error);
-        } finally {
-            // Восстанавливаем кнопку
-            saveBtn.disabled = false;
-            //spinner.style.display = 'none';
-            saveBtn.textContent = originalText;
         }
     }
 
-    function addBookToAvailableList(book) {
-        const container = document.getElementById('existingBooksList');
+    // Инициализация существующих книг из данных Thymeleaf
+    function initializeExistingBooksFromThymeleaf() {
+        const bookItems = document.querySelectorAll('#booksContainer .book-item');
+        bookItems.forEach(bookItem => {
+            const bookId = bookItem.querySelector('.book-id').value;
+            const bookItemId = bookItem.querySelector('.book-item-id').value;
+            const quantity = parseInt(bookItem.querySelector('.book-quantity').value) || 1;
 
-        // Проверяем, что контейнер существует
-        if (!container) {
-            console.log('Контейнер списка книг не найден (возможно, модальное окно закрыто)');
-            return;
-        }
-
-        // Удаляем сообщение "Книги не найдены", если оно есть
-        const noBooksMessage = container.querySelector('.text-center.text-muted');
-        if (noBooksMessage) {
-            noBooksMessage.remove();
-        }
-
-        // Создаем новый элемент книги
-        const bookElement = document.createElement('div');
-        bookElement.className = 'existing-book-item border-bottom p-3';
-        bookElement.innerHTML = `
-            <div class="row align-items-center">
-                <div class="col-md-6">
-                    <h6 class="mb-1 existing-book-title">${book.title || 'Без названия'}</h6>
-                    <small class="text-muted existing-book-author">${book.author || 'Автор не указан'}</small>
-                    <br>
-                </div>
-                <div class="col-md-2">
-                    <span class="existing-book-price fw-bold">${(book.price || 0).toFixed(2)} руб.</span>
-                </div>
-                <div class="col-md-2">
-                    <button type="button" class="btn btn-primary btn-sm w-100 add-existing-book"
-                            data-book-id="${book.id}"
-                            data-book-title="${book.title}"
-                            data-book-author="${book.author}"
-                            data-book-price="${book.price}">
-                        Добавить
-                    </button>
-                </div>
-            </div>
-        `;
-
-        // Добавляем обработчик для кнопки "Добавить"
-        const addButton = bookElement.querySelector('.add-existing-book');
-        addButton.addEventListener('click', function() {
-            const bookData = {
-                id: this.getAttribute('data-book-id'),
-                title: this.getAttribute('data-book-title'),
-                author: this.getAttribute('data-book-author'),
-                price: parseFloat(this.getAttribute('data-book-price'))
-            };
-            addBookToStore(bookData);
-
-            const modal = bootstrap.Modal.getInstance(document.getElementById('existingBooksModal'));
-            modal.hide();
+            selectedBooks.set(bookId, {
+                element: bookItem,
+                quantity: quantity,
+                bookItemId: bookItemId
+            });
         });
+        updateBooksDataContainer();
+        calculateTotal();
+    }
 
-        // Добавляем книгу в начало списка
-        container.insertBefore(bookElement, container.firstChild);
+    // Функция уменьшения количества
+    function decreaseQuantity(bookItem) {
+        const quantityInput = bookItem.querySelector('.book-quantity');
+        const currentValue = parseInt(quantityInput.value) || 1;
+        if (currentValue > 1) {
+            quantityInput.value = currentValue - 1;
+            updateBookItem(bookItem);
+        }
+    }
 
-        console.log('Новая книга добавлена в список доступных');
+    // Функция увеличения количества
+    function increaseQuantity(bookItem) {
+        const quantityInput = bookItem.querySelector('.book-quantity');
+        const currentValue = parseInt(quantityInput.value) || 1;
+        quantityInput.value = currentValue + 1;
+        updateBookItem(bookItem);
+    }
+
+    // Функция удаления книги
+    function removeBook(bookItem) {
+        const bookId = bookItem.querySelector('.book-id').value;
+        const bookItemId = bookItem.querySelector('.book-item-id').value;
+
+        // Если у книги есть ID из промежуточной таблицы, добавляем его в список удаленных
+        if (bookItemId && bookItemId !== '') {
+            deletedBookItems.add(bookItemId);
+            updateDeletedBooksContainer();
+        }
+
+        selectedBooks.delete(bookId);
+        bookItem.remove();
+        updateBooksDataContainer();
+        calculateTotal();
+    }
+
+    // Обновление данных книги
+    function updateBookItem(bookItem) {
+        const bookId = bookItem.querySelector('.book-id').value;
+        const bookItemId = bookItem.querySelector('.book-item-id').value;
+        const quantity = parseInt(bookItem.querySelector('.book-quantity').value) || 1;
+
+        if (selectedBooks.has(bookId)) {
+            selectedBooks.get(bookId).quantity = quantity;
+            selectedBooks.get(bookId).bookItemId = bookItemId;
+        }
+
+        calculateBookItemTotal(bookItem);
+        updateBooksDataContainer();
+        calculateTotal();
     }
 
     // Функция добавления книги в магазин
@@ -529,66 +491,18 @@
         const clone = template.content.cloneNode(true);
         const bookElement = clone.querySelector('.book-item');
 
-        // Устанавливаем уникальный идентификатор
-        const bookUniqueId = 'book_' + bookData.id + '_' + Date.now();
-        bookElement.dataset.bookId = bookUniqueId;
-
         // Заполняем данные книги
         bookElement.querySelector('.book-id').value = bookData.id;
         bookElement.querySelector('.book-title').value = bookData.title || '';
         bookElement.querySelector('.book-price').value = bookData.price || '';
         bookElement.querySelector('.book-author').textContent = bookData.author || '';
+        // book-item-id остается пустым для новых книг
 
         // Добавляем в коллекцию выбранных книг
         selectedBooks.set(bookData.id, {
             element: bookElement,
-            quantity: 1
-        });
-
-        // Обработчик удаления книги
-        const removeBtn = bookElement.querySelector('.btn-remove');
-        removeBtn.addEventListener('click', function() {
-            selectedBooks.delete(bookData.id);
-            bookElement.remove();
-            updateBooksDataContainer();
-            calculateTotal();
-        });
-
-        // Обработчики изменения цены и количества
-        const priceInput = bookElement.querySelector('.book-price');
-        const quantityInput = bookElement.querySelector('.book-quantity');
-
-        priceInput.addEventListener('input', function() {
-            calculateBookItemTotal.call(bookElement);
-            updateBooksDataContainer();
-        });
-
-        quantityInput.addEventListener('input', function() {
-            selectedBooks.get(bookData.id).quantity = quantityInput.value;
-            calculateBookItemTotal.call(bookElement);
-            updateBooksDataContainer();
-        });
-
-        // Обработчики кнопок количества
-        const decreaseBtn = bookElement.querySelector('.quantity-decrease');
-        const increaseBtn = bookElement.querySelector('.quantity-increase');
-
-        decreaseBtn.addEventListener('click', function() {
-            const currentValue = parseInt(quantityInput.value) || 1;
-            if (currentValue > 1) {
-                quantityInput.value = currentValue - 1;
-                selectedBooks.get(bookData.id).quantity = quantityInput.value;
-                calculateBookItemTotal.call(bookElement);
-                updateBooksDataContainer();
-            }
-        });
-
-        increaseBtn.addEventListener('click', function() {
-            const currentValue = parseInt(quantityInput.value) || 1;
-            quantityInput.value = currentValue + 1;
-            selectedBooks.get(bookData.id).quantity = quantityInput.value;
-            calculateBookItemTotal.call(bookElement);
-            updateBooksDataContainer();
+            quantity: 1,
+            bookItemId: '' // пустой ID для новых книг в промежуточной таблице
         });
 
         // Добавляем книгу в контейнер
@@ -598,7 +512,7 @@
         updateBooksDataContainer();
 
         // Рассчитываем итоги
-        calculateBookItemTotal.call(bookElement);
+        calculateBookItemTotal(bookElement);
         calculateTotal();
     }
 
@@ -606,11 +520,20 @@
     function updateBooksDataContainer() {
         const container = document.getElementById('booksDataContainer');
         container.innerHTML = '';
-        index = 0;
+        let index = 0;
+
         selectedBooks.forEach((bookData, bookId) => {
             const bookElement = bookData.element;
             const price = bookElement.querySelector('.book-price').value;
             const quantity = bookElement.querySelector('.book-quantity').value;
+            const bookItemId = bookElement.querySelector('.book-item-id').value;
+
+            // Добавляем ID из промежуточной таблицы
+            const bookItemIdInput = document.createElement('input');
+            bookItemIdInput.type = 'hidden';
+            bookItemIdInput.name = 'bookItems[' + index + '].bookItemId';
+            bookItemIdInput.value = bookItemId;
+            container.appendChild(bookItemIdInput);
 
             const bookIdInput = document.createElement('input');
             bookIdInput.type = 'hidden';
@@ -633,9 +556,24 @@
         });
     }
 
+    // Обновление контейнера с ID удаленных книг
+    function updateDeletedBooksContainer() {
+        const container = document.getElementById('deletedBooksContainer');
+        container.innerHTML = '';
+
+        let deletedIndex = 0;
+        deletedBookItems.forEach(bookItemId => {
+            const deletedInput = document.createElement('input');
+            deletedInput.type = 'hidden';
+            deletedInput.name = 'deletedBookItems[' + deletedIndex + ']';
+            deletedInput.value = bookItemId;
+            container.appendChild(deletedInput);
+            deletedIndex++;
+        });
+    }
+
     // Расчет стоимости для конкретной книги
-    function calculateBookItemTotal() {
-        const bookElement = this.closest('.book-item') || this;
+    function calculateBookItemTotal(bookElement) {
         const priceInput = bookElement.querySelector('.book-price');
         const quantityInput = bookElement.querySelector('.book-quantity');
         const itemTotalElement = bookElement.querySelector('.item-total');
@@ -645,7 +583,6 @@
         const itemTotal = price * quantity;
 
         itemTotalElement.textContent = itemTotal.toFixed(2);
-        calculateTotal();
     }
 
     // Функция расчета общей суммы и количества
@@ -673,7 +610,6 @@
 
         document.getElementById('totalAmount').textContent = totalAmount.toFixed(2) + ' руб.';
         document.getElementById('totalPrice').value = totalAmount;
-        console.log(document.getElementById('totalPrice').value);
         document.getElementById('totalQuantity').textContent = totalQuantity + ' шт.';
         document.getElementById('bookCount').textContent = 'Позиций: ' + validBooks;
     }
@@ -695,28 +631,91 @@
         });
     }
 
-    // Функции для работы с уведомлениями
-    function showAlert(containerId, message, type) {
-        const container = document.getElementById(containerId);
-        if (!container) {
-            console.error('Container not found:', containerId);
+    // Функция сохранения новой книги через AJAX
+    async function saveNewBook() {
+        const form = document.getElementById('newBookForm');
+        const saveBtn = document.getElementById('saveNewBookBtn');
+        const originalText = saveBtn.textContent;
+
+        // Валидация формы
+        if (!form.checkValidity()) {
+            form.reportValidity();
             return;
         }
 
-        container.innerHTML = `
-            <div class="alert alert-${type} alert-dismissible fade show">
-                ${message}
-                <button type="button" class="btn-close" onclick="hideAlert('${containerId}')"></button>
-            </div>
-        `;
-        container.style.display = 'block';
-    }
+        // Подготавливаем данные книги
+        const bookData = {
+            title: document.getElementById('newBookTitle').value.trim(),
+            author: document.getElementById('newBookAuthor').value.trim(),
+            price: parseFloat(document.getElementById('newBookPrice').value)
+        };
 
-    function hideAlert(containerId) {
-        const container = document.getElementById(containerId);
-        if (container) {
-            container.style.display = 'none';
-            container.innerHTML = '';
+        // Дополнительная валидация на клиенте
+        if (!bookData.title) {
+            alert('Введите название книги');
+            return;
+        }
+
+        if (!bookData.author) {
+            alert('Введите автора книги');
+            return;
+        }
+
+        if (!bookData.price || bookData.price <= 0) {
+            alert('Введите корректную цену');
+            return;
+        }
+
+        // Показываем индикатор загрузки
+        saveBtn.disabled = true;
+        saveBtn.innerHTML = '<span class="spinner-border spinner-border-sm" role="status"></span> Сохранение...';
+
+        try {
+            const response = await fetch('/books/create-ajax', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(bookData)
+            });
+
+            const responseData = await response.json();
+
+            if (!response.ok) {
+                throw new Error(responseData.message || `Ошибка сервера: ${response.status}`);
+            }
+
+            // Успешное сохранение
+            const savedBook = responseData;
+
+            // Автоматически добавляем новую книгу в магазин
+            addBookToStore({
+                id: savedBook.id,
+                title: savedBook.title,
+                author: savedBook.author,
+                price: savedBook.price
+            });
+
+            // Очищаем форму
+            document.getElementById('newBookForm').reset();
+
+            // Закрываем модальное окно
+            setTimeout(() => {
+                const modal = bootstrap.Modal.getInstance(document.getElementById('newBookModal'));
+                modal.hide();
+
+                // Восстанавливаем кнопку
+                saveBtn.disabled = false;
+                saveBtn.textContent = originalText;
+            }, 1000);
+
+        } catch (error) {
+            console.error('Ошибка при сохранении книги:', error);
+            alert('Ошибка при сохранении книги: ' + error.message);
+
+            // Восстанавливаем кнопку
+            saveBtn.disabled = false;
+            saveBtn.textContent = originalText;
         }
     }
 
@@ -726,27 +725,12 @@
             document.getElementById('storeForm').reset();
             document.getElementById('booksContainer').innerHTML = '';
             document.getElementById('booksDataContainer').innerHTML = '';
+            document.getElementById('deletedBooksContainer').innerHTML = '';
             selectedBooks.clear();
+            deletedBookItems.clear();
             bookCounter = 0;
             calculateTotal();
         }
-    }
-
-    // Валидация книги
-    function validateBook() {
-        calculateTotal();
-    }
-
-    // Инициализация кнопок удаления
-    function initializeRemoveButtons() {
-        const removeButtons = document.querySelectorAll('.btn-remove');
-        removeButtons.forEach(button => {
-            button.addEventListener('click', function() {
-                const bookItem = this.closest('.book-item');
-                bookItem.remove();
-                calculateTotal();
-            });
-        });
     }
 </script>
 </body>

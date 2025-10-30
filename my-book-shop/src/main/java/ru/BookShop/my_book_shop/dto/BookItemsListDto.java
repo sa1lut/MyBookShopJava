@@ -18,6 +18,8 @@ public class BookItemsListDto {
     @NotNull
     private Integer quantity;
 
+    private Long bookItemId;
+
     @Override
     public String toString() {
         return "BookItemRequest{" +
