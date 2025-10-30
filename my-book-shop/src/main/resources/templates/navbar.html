@@ -19,6 +19,9 @@
         </button>
         <div th:if="${#authorization.expression('isAuthenticated()')}" class="collapse navbar-collapse">
             <ul class="navbar-nav ms-auto">
+                <li sec:authorize="hasRole('ROLE_ADMIN')" class="nav-item">
+                    <a th:href="@{/admin/users/list}" class="nav-link">Пользователи</a>
+                </li>
                 <li sec:authorize="!hasRole('ROLE_READ_ONLY')" class="nav-item">
                     <a th:href="@{/books/list}" class="nav-link">Книги</a>
                 </li>

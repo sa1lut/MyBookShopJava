@@ -14,7 +14,7 @@ import java.util.Set;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-public class UserDto {
+public class UserUpdateDto {
     private Long id;
     @NotEmpty
     private String firstName;
@@ -23,16 +23,13 @@ public class UserDto {
     @NotEmpty(message = "Login should not be empty")
     private String username;
 
-    @NotEmpty(message = "Password should not be empty")
     private String password;
-
-    private Set<Role> roles = new HashSet<>();
 
     @Override
     public String toString() {
         return "BookItemRequest{" +
                 "Id=" + id +
-                ", roles=" + roles +
+//                ", roles=" + roles +
                 '}';
     }
 }

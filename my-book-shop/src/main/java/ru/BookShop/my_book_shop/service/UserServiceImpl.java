@@ -4,14 +4,13 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import ru.BookShop.my_book_shop.dto.UserDto;
+import ru.BookShop.my_book_shop.dto.UserUpdateDto;
 import ru.BookShop.my_book_shop.entity.Role;
 import ru.BookShop.my_book_shop.entity.User;
 import ru.BookShop.my_book_shop.repository.RoleRepository;
 import ru.BookShop.my_book_shop.repository.UserRepository;
 
-import java.util.List;
-import java.util.Optional;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Service
@@ -52,6 +51,47 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
+    public void updateUser(UserUpdateDto user, Set<String> roleNames) {
+        User existingUser = findUserByUsername(user.getUsername());
+
+        // Обновляем основные поля
+        existingUser.setFirstName(user.getFirstName());
+        existingUser.setLastName(user.getLastName());
+
+        // Получаем существующие роли из базы данных
+        Set<Role> newRoles = roleNames.stream()
+                .map(roleName -> {
+                    // Ищем роль в базе данных по имени
+                    Role role = roleRepository.findByName(Role.RoleName.valueOf(roleName));
+                    return role;
+                })
+                .collect(Collectors.toSet());
+
+        existingUser.setRoles(newRoles);
+        userRepository.save(existingUser);
+    }
+
+    @Override
+    public void updateUserFromDto(UserDto userDto, Set<String> roleNames) {
+        User existingUser = userRepository.findByUsername(userDto.getUsername());
+
+        existingUser.setFirstName(userDto.getFirstName());
+        existingUser.setLastName(userDto.getLastName());
+
+        // Обновляем роли
+        Set<Role> newRoles = roleNames.stream()
+                .map(roleName -> {
+                    Role role = new Role();
+                    role.setName(Role.RoleName.valueOf(roleName));
+                    return role;
+                })
+                .collect(Collectors.toSet());
+
+        existingUser.setRoles(newRoles);
+        userRepository.save(existingUser);
+    }
+
+    @Override
     public void saveUser(User user) {
         userRepository.save(user);
     }
@@ -61,11 +101,10 @@ public class UserServiceImpl implements UserService {
         return userRepository.findByUsername(username);
     }
 
-//    private Role checkRoleExist() {
-//        Role role = new Role();
-//        role.setName("ROLE_ADMIN");
-//        return roleRepository.save(role);
-//    }
+    @Override
+    public User findUserById(Long id){
+        return userRepository.getById(id);
+    }
 
     @Override
     public List<UserDto> findAllUsers() {
@@ -76,16 +115,22 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
+    public void deleteUser(Long userId) {
+        userRepository.deleteById(userId);
+    }
+
+    @Override
     public User findUserByUsername(String username) {
         return userRepository.findByUsername(username);
     }
 
     private UserDto mapToUserDto(User user) {
         UserDto userDto = new UserDto();
-//        String[] str = user.getUsername().split(" ");
+        userDto.setId(user.getId());
         userDto.setFirstName(user.getFirstName());
         userDto.setLastName(user.getLastName());
         userDto.setUsername(user.getUsername());
+        userDto.setRoles(user.getRoles());
         return userDto;
     }
 }
