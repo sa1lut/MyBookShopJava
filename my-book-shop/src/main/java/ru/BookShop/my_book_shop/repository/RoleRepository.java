@@ -6,6 +6,6 @@ import ru.BookShop.my_book_shop.entity.Role;
 
 @Repository
 public interface RoleRepository extends JpaRepository<Role, Long> {
-    Role findByName(String name);
+    Role findByName(Role.RoleName name);
 }
 

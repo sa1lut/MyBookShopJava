@@ -6,5 +6,5 @@ import ru.BookShop.my_book_shop.entity.User;
 
 @Repository
 public interface UserRepository extends JpaRepository<User, Long> {
-    User findUserByUsername(String username);
+    User findByUsername(String username);
 }

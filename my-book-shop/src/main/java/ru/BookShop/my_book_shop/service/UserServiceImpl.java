@@ -11,6 +11,7 @@ import ru.BookShop.my_book_shop.repository.UserRepository;
 
 import java.util.Arrays;
 import java.util.List;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 @Service
@@ -38,12 +39,15 @@ public class UserServiceImpl implements UserService {
         //encrypt the password using spring security
         user.setPassword(passwordEncoder.encode(userDto.getPassword()));
 
-        Role role = roleRepository.findByName("ROLE_ADMIN");
-        if (role == null) {
-            role = checkRoleExist();
-        }
-
-        user.setRole(role);
+        user.setRoles(Set.of(
+                roleRepository.findByName(Role.RoleName.ROLE_READ_ONLY)
+        ));
+//        Role role = roleRepository.findByName("ROLE_ADMIN");
+//        if (role == null) {
+//            role = checkRoleExist();
+//        }
+//
+//        user.setRole(role);
         userRepository.save(user);
     }
 
@@ -54,14 +58,14 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public User findUserByEmail(String username) {
-        return userRepository.findUserByUsername(username);
+        return userRepository.findByUsername(username);
     }
 
-    private Role checkRoleExist() {
-        Role role = new Role();
-        role.setName("ROLE_ADMIN");
-        return roleRepository.save(role);
-    }
+//    private Role checkRoleExist() {
+//        Role role = new Role();
+//        role.setName("ROLE_ADMIN");
+//        return roleRepository.save(role);
+//    }
 
     @Override
     public List<UserDto> findAllUsers() {

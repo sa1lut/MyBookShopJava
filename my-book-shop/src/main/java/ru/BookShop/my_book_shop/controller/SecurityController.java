@@ -1,17 +1,23 @@
 package ru.BookShop.my_book_shop.controller;
 
 import jakarta.validation.Valid;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RestController;
 import ru.BookShop.my_book_shop.dto.UserDto;
 import ru.BookShop.my_book_shop.entity.User;
 import ru.BookShop.my_book_shop.service.UserService;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 @Controller
 public class SecurityController {
@@ -20,9 +26,9 @@ public class SecurityController {
         this.userService = userService;
     }
 
-    @GetMapping("/index")
+    @GetMapping("/")
     public String index() {
-        return "index";
+        return "home";
     }
 
     @GetMapping("/home")
@@ -66,7 +72,8 @@ public class SecurityController {
         return "redirect:/register?success";
     }
 
-    @GetMapping("/users")
+    @PreAuthorize("hasRole('ADMIN')")
+    @GetMapping("/admin/users")
     public String users(Model model) {
         List<UserDto> users = userService.findAllUsers();
         model.addAttribute("users", users);
@@ -74,3 +81,4 @@ public class SecurityController {
     }
 
 }
+

@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="ru" xmlns:th="http://www.thymeleaf.org">
+<html lang="ru" xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.w3.org/1999/xhtml">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -70,7 +70,7 @@
                     Современная система управления книжными магазинами.
                     Создавайте магазины, управляйте книгами.
                 </p>
-                <div class="d-flex gap-3 flex-wrap">
+                <div sec:authorize="!hasRole('ROLE_READ_ONLY')" class="d-flex gap-3 flex-wrap">
                     <a th:href="@{/bookstores/list}" class="btn btn-light btn-custom">
                         <i class="bi bi-list-ul me-2"></i>Список магазинов
                     </a>

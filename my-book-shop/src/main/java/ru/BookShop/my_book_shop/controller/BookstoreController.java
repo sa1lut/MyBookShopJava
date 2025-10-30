@@ -1,6 +1,7 @@
 package ru.BookShop.my_book_shop.controller;
 
 import jakarta.validation.Valid;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.servlet.ModelAndView;
 import ru.BookShop.my_book_shop.dto.BookDto;
@@ -21,6 +22,7 @@ import java.util.Optional;
 
 @Controller
 @RequestMapping("/bookstores")
+@PreAuthorize("hasAnyRole('USER', 'ADMIN')")
 public class BookstoreController {
 
     private final BookstoreService bookStoreService;

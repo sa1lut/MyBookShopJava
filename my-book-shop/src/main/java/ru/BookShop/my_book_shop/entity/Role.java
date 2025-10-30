@@ -5,6 +5,7 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import org.springframework.security.core.GrantedAuthority;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -15,14 +16,23 @@ import java.util.List;
 @AllArgsConstructor
 @Entity
 @Table(name = "roles")
-public class Role {
+public class Role implements GrantedAuthority {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(nullable = false, unique = true)
-    private String name;
+    @Enumerated(EnumType.STRING)
+    @Column(unique = true, nullable = false)
+    private RoleName name;
 
-    @OneToMany(mappedBy = "role")
-    private List<User> users = new ArrayList<>();
+    public enum RoleName {
+        ROLE_ADMIN,
+        ROLE_USER,
+        ROLE_READ_ONLY
+    }
+
+    @Override
+    public String getAuthority() {
+        return name.name(); // Возвращает "ROLE_ADMIN", "ROLE_USER" и т.д.
+    }
 }
