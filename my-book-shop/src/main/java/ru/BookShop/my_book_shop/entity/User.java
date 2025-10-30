@@ -8,9 +8,7 @@ import lombok.Setter;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
-import java.util.Collection;
-import java.util.HashSet;
-import java.util.Set;
+import java.util.*;
 
 @Getter
 @Setter
@@ -43,6 +41,11 @@ public class User implements UserDetails {
     )
     private Set<Role> roles = new HashSet<>();
 
+    @OneToMany(mappedBy = "userBook", cascade = CascadeType.ALL)
+    private List<Book> book = new ArrayList<>();
+
+    @OneToMany(mappedBy = "userBookstore", cascade = CascadeType.ALL)
+    private List<Bookstore> bookstore = new ArrayList<>();
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {

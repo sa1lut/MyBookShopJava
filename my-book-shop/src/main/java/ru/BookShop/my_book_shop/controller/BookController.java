@@ -5,6 +5,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
@@ -13,6 +15,7 @@ import org.springframework.web.servlet.ModelAndView;
 import ru.BookShop.my_book_shop.dto.BookDto;
 import ru.BookShop.my_book_shop.dto.UserDto;
 import ru.BookShop.my_book_shop.entity.Book;
+import ru.BookShop.my_book_shop.entity.User;
 import ru.BookShop.my_book_shop.repository.BookRepository;
 import ru.BookShop.my_book_shop.service.BookService;
 import ru.BookShop.my_book_shop.service.UserService;
@@ -21,7 +24,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
 
-@RestController
+@Controller
 @RequestMapping("/books")
 @PreAuthorize("hasAnyRole('USER', 'ADMIN')")
 public class BookController {
@@ -50,12 +53,16 @@ public class BookController {
 
     @PostMapping("/saveBook")
     public String saveBook(@Valid @ModelAttribute("book") Book book,
+                           @AuthenticationPrincipal UserDetails userDetails,
                            BindingResult result,
                            Model model) {
         if (result.hasErrors()) {
             model.addAttribute("book", book);
             return "redirect:/books/new";
         }
+        String username = userDetails.getUsername();
+        User currentUser = userService.findUserByUsername(username);
+        book.setUserBook(currentUser);
         bookService.saveBook(book);
         return "redirect:/books/list";
     }
@@ -84,6 +91,7 @@ public class BookController {
     @PostMapping("/create-ajax")
     @ResponseBody
     public ResponseEntity<?> createBookAjax(@Valid @RequestBody BookDto bookDto,
+                                            @AuthenticationPrincipal UserDetails userDetails,
                                             BindingResult result) {
         if (result.hasErrors()) {
             Map<String, String> errors = new HashMap<>();
@@ -93,7 +101,10 @@ public class BookController {
         }
 
         try {
-            BookDto savedBook = bookService.createBook(bookDto);
+            String username = userDetails.getUsername();
+            System.out.println(username);
+            User currentUser = userService.findUserByUsername(username);
+            BookDto savedBook = bookService.createBook(bookDto, currentUser);
             return ResponseEntity.ok(savedBook);
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)

@@ -2,6 +2,8 @@ package ru.BookShop.my_book_shop.controller;
 
 import jakarta.validation.Valid;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.servlet.ModelAndView;
 import ru.BookShop.my_book_shop.dto.BookDto;
@@ -9,12 +11,14 @@ import ru.BookShop.my_book_shop.dto.BookListDto;
 import ru.BookShop.my_book_shop.dto.BookStoreDto;
 import ru.BookShop.my_book_shop.entity.Book;
 import ru.BookShop.my_book_shop.entity.Bookstore;
+import ru.BookShop.my_book_shop.entity.User;
 import ru.BookShop.my_book_shop.repository.UserRepository;
 import ru.BookShop.my_book_shop.service.BookService;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 import ru.BookShop.my_book_shop.service.BookstoreService;
+import ru.BookShop.my_book_shop.service.UserService;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -27,12 +31,12 @@ public class BookstoreController {
 
     private final BookstoreService bookStoreService;
     private final BookService bookService;
-    private final UserRepository userRepository;
+    private UserService userService;
 
-    public BookstoreController(BookstoreService bookStoreService, BookService bookService, UserRepository userRepository) {
+    public BookstoreController(BookstoreService bookStoreService, BookService bookService, UserService userService) {
         this.bookStoreService = bookStoreService;
         this.bookService = bookService;
-        this.userRepository = userRepository;
+        this.userService = userService;
     }
 
     @GetMapping("list")
@@ -55,6 +59,7 @@ public class BookstoreController {
     @PostMapping("/saveBookStore")
     public String saveBookstore(@ModelAttribute Bookstore bookstore,
                                 @ModelAttribute BookListDto bookListDto,
+                                @AuthenticationPrincipal UserDetails userDetails,
                                 BindingResult result,
                                 Model model) {
         if (result.hasErrors()) {
@@ -63,8 +68,9 @@ public class BookstoreController {
             model.addAttribute("book", bookListDto);
             return "redirect:/bookstores/new";
         }
-
-        System.out.println(bookListDto);
+        String username = userDetails.getUsername();
+        User currentUser = userService.findUserByUsername(username);
+        bookstore.setUserBookstore(currentUser);
 
         if (bookListDto.getBookItems() == null){
             bookStoreService.saveBookStore(bookstore);

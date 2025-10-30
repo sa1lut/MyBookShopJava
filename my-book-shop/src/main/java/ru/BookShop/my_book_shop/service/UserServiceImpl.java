@@ -9,8 +9,8 @@ import ru.BookShop.my_book_shop.entity.User;
 import ru.BookShop.my_book_shop.repository.RoleRepository;
 import ru.BookShop.my_book_shop.repository.UserRepository;
 
-import java.util.Arrays;
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -73,6 +73,11 @@ public class UserServiceImpl implements UserService {
         return users.stream()
                 .map(this::mapToUserDto)
                 .collect(Collectors.toList());
+    }
+
+    @Override
+    public User findUserByUsername(String username) {
+        return userRepository.findByUsername(username);
     }
 
     private UserDto mapToUserDto(User user) {

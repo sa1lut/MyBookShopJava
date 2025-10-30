@@ -1,14 +1,14 @@
 package ru.BookShop.my_book_shop.service;
 
 import jakarta.persistence.EntityNotFoundException;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import ru.BookShop.my_book_shop.dto.BookDto;
 import ru.BookShop.my_book_shop.dto.BookItemsListDto;
 import ru.BookShop.my_book_shop.dto.BookListDto;
-import ru.BookShop.my_book_shop.entity.Book;
-import ru.BookShop.my_book_shop.entity.BookBookStoreList;
-import ru.BookShop.my_book_shop.entity.Bookstore;
+import ru.BookShop.my_book_shop.entity.*;
 import ru.BookShop.my_book_shop.repository.BookBookStoreListRepository;
 import ru.BookShop.my_book_shop.repository.BookRepository;
 import ru.BookShop.my_book_shop.repository.BookstoreRepository;
@@ -69,13 +69,12 @@ public class BookstoreServiceImpl implements BookstoreService {
 
     @Override
     public List<Bookstore> getBookstoresForUser() {
-//        if (user.getRoles().contains(Role.ADMIN)) {
-//            return bookstoreRepository.findAll();
-//        } else if (user.getRoles().contains(Role.USER)) {
-//            return bookstoreRepository.findByCreatedBy(user);
-//        } else {
-//            return bookstoreRepository.findByCreatedByOrCreatedByIsNull(user);
-//        }
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        User user = (User) authentication.getPrincipal();
+
+        if (user.hasRole(Role.RoleName.ROLE_USER)) {
+            return bookstoreRepository.findByUserBookstore(user);
+        }
         return bookstoreRepository.findAll();
     }
 

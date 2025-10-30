@@ -1,9 +1,13 @@
 package ru.BookShop.my_book_shop.service;
 
 import jakarta.transaction.Transactional;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import ru.BookShop.my_book_shop.dto.BookDto;
 import ru.BookShop.my_book_shop.entity.Book;
+import ru.BookShop.my_book_shop.entity.Role;
+import ru.BookShop.my_book_shop.entity.User;
 import ru.BookShop.my_book_shop.repository.BookRepository;
 
 import java.util.List;
@@ -36,11 +40,12 @@ public class BookServiceImpl implements BookService {
     }
 
     @Override
-    public BookDto createBook(BookDto bookDto) {
+    public BookDto createBook(BookDto bookDto, User user) {
         Book book = new Book();
         book.setTitle(bookDto.getTitle());
         book.setAuthor(bookDto.getAuthor());
         book.setPrice(bookDto.getPrice());
+        book.setUserBook(user);
         Book newBook = bookRepository.save(book);
         bookDto.setTitle(newBook.getTitle());
         bookDto.setAuthor(newBook.getAuthor());
@@ -51,15 +56,12 @@ public class BookServiceImpl implements BookService {
     }
 
     public List<Book> getBooksForUser() {
-//        if (Role.getName("ROLE_ADMIN") == user.getRole()) {
-//            return bookRepository.findAll();
-//        } else if (user.getRoles().contains(Role.USER)) {
-//            return bookRepository.findByCreatedBy(user);
-//        } else {
-//            return bookRepository.findByCreatedByOrCreatedByIsNull(user);
-//        }
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        User user = (User) authentication.getPrincipal();
 
-
+        if (user.hasRole(Role.RoleName.ROLE_USER)) {
+            return bookRepository.findByUserBook(user);
+        }
         return bookRepository.findAll();
     }
 
