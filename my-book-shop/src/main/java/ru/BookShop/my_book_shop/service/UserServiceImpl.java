@@ -1,5 +1,6 @@
 package ru.BookShop.my_book_shop.service;
 
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -13,6 +14,7 @@ import ru.BookShop.my_book_shop.repository.UserRepository;
 import java.util.*;
 import java.util.stream.Collectors;
 
+@Slf4j
 @Service
 public class UserServiceImpl implements UserService {
 
@@ -41,13 +43,8 @@ public class UserServiceImpl implements UserService {
         user.setRoles(Set.of(
                 roleRepository.findByName(Role.RoleName.ROLE_READ_ONLY)
         ));
-//        Role role = roleRepository.findByName("ROLE_ADMIN");
-//        if (role == null) {
-//            role = checkRoleExist();
-//        }
-//
-//        user.setRole(role);
         userRepository.save(user);
+        log.info("Сохранен пользователь: {}", user.getUsername());
     }
 
     @Override
@@ -69,40 +66,12 @@ public class UserServiceImpl implements UserService {
 
         existingUser.setRoles(newRoles);
         userRepository.save(existingUser);
-    }
-
-    @Override
-    public void updateUserFromDto(UserDto userDto, Set<String> roleNames) {
-        User existingUser = userRepository.findByUsername(userDto.getUsername());
-
-        existingUser.setFirstName(userDto.getFirstName());
-        existingUser.setLastName(userDto.getLastName());
-
-        // Обновляем роли
-        Set<Role> newRoles = roleNames.stream()
-                .map(roleName -> {
-                    Role role = new Role();
-                    role.setName(Role.RoleName.valueOf(roleName));
-                    return role;
-                })
-                .collect(Collectors.toSet());
-
-        existingUser.setRoles(newRoles);
-        userRepository.save(existingUser);
-    }
-
-    @Override
-    public void saveUser(User user) {
-        userRepository.save(user);
-    }
-
-    @Override
-    public User findUserByEmail(String username) {
-        return userRepository.findByUsername(username);
+        log.info("Изменен пользователь: {}", user.getUsername());
     }
 
     @Override
     public User findUserById(Long id){
+        log.info("Поиск по: {}", id);
         return userRepository.getById(id);
     }
 
@@ -116,11 +85,13 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public void deleteUser(Long userId) {
+        log.info("Удаление пользователя с id: {}", userId);
         userRepository.deleteById(userId);
     }
 
     @Override
     public User findUserByUsername(String username) {
+        log.info("Поиск по: {}", username);
         return userRepository.findByUsername(username);
     }
 

@@ -24,12 +24,4 @@ public class UserUpdateDto {
     private String username;
 
     private String password;
-
-    @Override
-    public String toString() {
-        return "BookItemRequest{" +
-                "Id=" + id +
-//                ", roles=" + roles +
-                '}';
-    }
 }

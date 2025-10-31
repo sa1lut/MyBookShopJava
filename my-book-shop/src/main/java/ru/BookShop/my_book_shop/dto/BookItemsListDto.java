@@ -19,13 +19,4 @@ public class BookItemsListDto {
     private Integer quantity;
 
     private Long bookItemId;
-
-    @Override
-    public String toString() {
-        return "BookItemRequest{" +
-                "bookId=" + bookId +
-                ", price=" + price +
-                ", quantity=" + quantity +
-                '}';
-    }
 }

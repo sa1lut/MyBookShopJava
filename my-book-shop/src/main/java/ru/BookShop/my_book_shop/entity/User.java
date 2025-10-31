@@ -49,7 +49,7 @@ public class User implements UserDetails {
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
-        return roles;  // Теперь Role implements GrantedAuthority
+        return roles;
     }
 
     public boolean hasRole(Role.RoleName roleName) {

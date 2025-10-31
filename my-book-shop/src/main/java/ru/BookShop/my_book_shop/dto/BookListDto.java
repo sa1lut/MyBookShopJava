@@ -21,15 +21,5 @@ public class BookListDto {
     private List<BookItemsListDto> bookItems;
 
     private List<Long> deletedBookItems;
-
-    @Override
-    public String toString() {
-        return "BookListRequest{" +
-                "id=" + id +
-                ", totalPrice=" + totalPrice +
-                ", items=" + bookItems +
-                ", ids=" + deletedBookItems +
-                '}';
-    }
 }
 

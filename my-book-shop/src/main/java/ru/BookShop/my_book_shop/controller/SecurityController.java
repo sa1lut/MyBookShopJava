@@ -1,6 +1,7 @@
 package ru.BookShop.my_book_shop.controller;
 
 import jakarta.validation.Valid;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -17,6 +18,7 @@ import ru.BookShop.my_book_shop.service.UserService;
 
 import java.util.*;
 
+@Slf4j
 @Controller
 public class SecurityController {
     private UserService userService;
@@ -34,11 +36,6 @@ public class SecurityController {
         return "home";
     }
 
-//    @GetMapping("/books")
-//    public String books() {
-//        return "books";
-//    }
-
     @GetMapping("/login")
     public String login() {
         return "login";
@@ -55,7 +52,8 @@ public class SecurityController {
     public String registration(@Valid @ModelAttribute("user") UserDto userDto,
                                BindingResult result,
                                Model model) {
-        User existingUser = userService.findUserByEmail(userDto.getUsername());
+        log.info("POST /register/save сохранение пользователя: {}", userDto.getUsername());
+        User existingUser = userService.findUserByUsername(userDto.getUsername());
 
         if(existingUser != null && existingUser.getUsername() != null && !existingUser.getUsername().isEmpty()) {
             result.rejectValue("login", null, "На этот адрес электронной почты уже зарегистрирована учетная запись.");
@@ -72,43 +70,30 @@ public class SecurityController {
 
     @PreAuthorize("hasRole('ADMIN')")
     @GetMapping("/admin/users/list")
-    public String users(Model model) {
+    public String users(Model model, @AuthenticationPrincipal UserDetails userDetails) {
+        log.info("GET /admin/users/list получение списка пользователей пользователем: {}", userDetails.getUsername());
         List<UserDto> users = userService.findAllUsers();
-        System.out.println(users);
+
         model.addAttribute("users", users);
         return "users";
     }
-
-
-//    @RequestParam("id") Long id,
-//    @RequestParam("firstName") String firstName,
-//    @RequestParam("lastName") String lastName,
-//
 
     @PreAuthorize("hasRole('ADMIN')")
     @PostMapping("/admin/users/saveUser")
     public String saveUser(@Valid @ModelAttribute("user") UserUpdateDto user,
                            @RequestParam("roles") Set<String> roleNames,
+                           @AuthenticationPrincipal UserDetails userDetails,
                            BindingResult result,
                            Model model) {
-
-        // Создаем UserDto и заполняем данными
-//        UserDto userDto = new UserDto();
-//        userDto.setId(user.getId());
-//        userDto.setUsername(user.getUsername());
-//        userDto.setFirstName(user.getFirstName());
-//        userDto.setLastName(user.getLastName());
-//        userDto.setPassword(user.getPassword());
-//        userDto.setRoles(userDto.getRoles());
-
+        log.info("POST /admin/users/saveUser сохранение пользователя: {} пользователем: {}", user.getUsername(), userDetails.getUsername());
         userService.updateUser(user, roleNames);
         return "redirect:/admin/users/list";
     }
 
     @PreAuthorize("hasRole('ADMIN')")
     @GetMapping("/admin/users/updateUser")
-    public ModelAndView updateUser(@RequestParam Long id) {
-
+    public ModelAndView updateUser(@RequestParam Long id, @AuthenticationPrincipal UserDetails userDetails) {
+        log.info("GET /admin/users/updateUser получение формы для редактирования пользователя пользователем: {}", userDetails.getUsername());
         ModelAndView mav = new ModelAndView("users-form");
         User user = userService.findUserById(id);
         mav.addObject("user", user);
@@ -118,7 +103,8 @@ public class SecurityController {
 
     @PreAuthorize("hasRole('ADMIN')")
     @GetMapping("/admin/users/deleteUser")
-    public String deleteUser(@PathVariable Long id) {
+    public String deleteUser(@RequestParam Long id, @AuthenticationPrincipal UserDetails userDetails) {
+        log.info("GET /admin/users/deleteUser удаление пользователя пользователем: {}", userDetails.getUsername());
         userService.deleteUser(id);
         return "redirect:/admin/users/list";
     }

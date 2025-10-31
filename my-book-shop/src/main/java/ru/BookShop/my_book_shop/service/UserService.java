@@ -9,9 +9,6 @@ import java.util.Set;
 
 public interface UserService {
     void saveUser(UserDto userDto);
-    void saveUser(User user);
-
-    User findUserByEmail(String username);
 
     List<UserDto> findAllUsers();
 
@@ -22,6 +19,4 @@ public interface UserService {
     void updateUser(UserUpdateDto user, Set<String> roleNames);
 
     void deleteUser(Long id);
-
-    void updateUserFromDto(UserDto userDto, Set<String> roleNames);
 }

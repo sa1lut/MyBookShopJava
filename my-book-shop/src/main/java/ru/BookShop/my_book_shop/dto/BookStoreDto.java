@@ -28,14 +28,4 @@ public class BookStoreDto {
     private Integer totalQuantity;
 
     private List<BookDto> bookItems;
-
-    @Override
-    public String toString() {
-        return "BookStoreRequest{" +
-                "id="+ id +
-                "name=" + name +
-                ", address=" + address +
-                ", phone=" + phone +
-                '}';
-    }
 }

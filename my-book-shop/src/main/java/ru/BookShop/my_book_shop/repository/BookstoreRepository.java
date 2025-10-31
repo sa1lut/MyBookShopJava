@@ -10,6 +10,4 @@ import java.util.List;
 @Repository
 public interface BookstoreRepository extends JpaRepository<Bookstore, Long> {
     List<Bookstore> findByUserBookstore(User user);
-//    void save(BookItemsList bookItemsList);
-//    void save(BookList bookList);
 }

@@ -15,8 +15,6 @@ public interface BookstoreService {
 
     List<Bookstore> getBookstoresForUser();
 
-//    BookItemsList getByBookStoreId(Long id);
-
     void deleteBookstore(Long id);
 
     Optional<Bookstore> findById(Long id);

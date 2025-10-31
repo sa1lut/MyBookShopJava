@@ -1,6 +1,7 @@
 package ru.BookShop.my_book_shop.service;
 
 import jakarta.transaction.Transactional;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
@@ -13,12 +14,12 @@ import ru.BookShop.my_book_shop.repository.BookRepository;
 import java.util.List;
 import java.util.Optional;
 
+@Slf4j
 @Service
 @Transactional
 public class BookServiceImpl implements BookService {
 
     private final BookRepository bookRepository;
-//    private static final Logger logger = LoggerFactory.getLogger(BookstoreService.class);
 
     public BookServiceImpl(BookRepository bookRepository) {
         this.bookRepository = bookRepository;
@@ -27,16 +28,7 @@ public class BookServiceImpl implements BookService {
     @Override
     public void saveBook(Book book) {
         bookRepository.save(book);
-    }
-
-    @Override
-    public void saveBook(BookDto bookDto){
-        Book book = new Book();
-        book.setTitle(bookDto.getTitle());
-        book.setAuthor(bookDto.getAuthor());
-        book.setPrice(bookDto.getPrice());
-
-        bookRepository.save(book);
+        log.info("Сохранена книга: '{}' пользователем: {}", book.getTitle(), book.getUserBook().getUsername());
     }
 
     @Override
@@ -47,6 +39,7 @@ public class BookServiceImpl implements BookService {
         book.setPrice(bookDto.getPrice());
         book.setUserBook(user);
         Book newBook = bookRepository.save(book);
+        log.info("Создана книга: '{}' пользователем: {}", book.getTitle(), user.getUsername());
         bookDto.setTitle(newBook.getTitle());
         bookDto.setAuthor(newBook.getAuthor());
         bookDto.setPrice(newBook.getPrice());
@@ -65,9 +58,9 @@ public class BookServiceImpl implements BookService {
         return bookRepository.findAll();
     }
 
-
     public void deleteBook(Long id) {
         bookRepository.deleteById(id);
+        log.info("Удалена книга с id: {} ", id);
     }
 
     public Optional<Book> findById(Long id) {

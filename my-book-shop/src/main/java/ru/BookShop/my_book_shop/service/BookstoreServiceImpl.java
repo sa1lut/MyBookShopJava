@@ -1,6 +1,7 @@
 package ru.BookShop.my_book_shop.service;
 
 import jakarta.persistence.EntityNotFoundException;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
@@ -15,6 +16,7 @@ import ru.BookShop.my_book_shop.repository.BookstoreRepository;
 
 import java.util.*;
 
+@Slf4j
 @Service
 @Transactional
 public class BookstoreServiceImpl implements BookstoreService {
@@ -22,7 +24,6 @@ public class BookstoreServiceImpl implements BookstoreService {
     private final BookstoreRepository bookstoreRepository;
     private final BookRepository bookRepository;
     private final BookBookStoreListRepository bookBookStoreListRepository;
-//    private static final Logger logger = LoggerFactory.getLogger(BookstoreService.class);
 
     public BookstoreServiceImpl(BookstoreRepository bookstoreRepository, BookRepository bookRepository,
                                 BookBookStoreListRepository bookBookStoreListRepository) {
@@ -34,6 +35,7 @@ public class BookstoreServiceImpl implements BookstoreService {
     @Override
     public void saveBookStore(Bookstore bookstore) {
         bookstoreRepository.save(bookstore);
+        log.info("Сохранен магазин: '{}' пользователем: {}", bookstore.getName(), bookstore.getUserBookstore().getUsername());
     }
 
     @Override
@@ -64,8 +66,8 @@ public class BookstoreServiceImpl implements BookstoreService {
 
             bookBookStoreListRepository.save(bookItemListNew);
         }
+        log.info("Сохранен магазин: '{}' c книгами: {} пользователем: {}", bookstore.getName(), bookstore.getBookBookStoreListSet(), bookstore.getUserBookstore().getUsername());
     }
-
 
     @Override
     public List<Bookstore> getBookstoresForUser() {
@@ -81,28 +83,12 @@ public class BookstoreServiceImpl implements BookstoreService {
     @Override
     public void deleteBookstore(Long id) {
         bookstoreRepository.deleteById(id);
+        log.info("Удален магазин с id: {} ", id);
     }
 
     public Optional<Bookstore> findById(Long id) {
         return bookstoreRepository.findById(id);
     }
-
-//    public BookItemsList getByBookStoreId(Long id) {
-//
-//        BookList bookList = null;
-//        BookItemsList bookItemsList = null;
-//        try {
-//            bookList = bookListRepository.getReferenceById(id);
-//            if (!bookListRepository.existsById(id)) {
-//                return null;
-//            }
-//            Long idBookList = bookList.getId();
-//            bookItemsList = bookItemsListRepository.getReferenceById(idBookList);
-//            return bookItemsList;
-//        } catch (EntityNotFoundException e) {
-//            return null;
-//        }
-//    }
 
     public List<BookDto> getBooksWithQuantity(Long bookStoreId) {
         // Получаем информацию о книжном магазине с количеством

@@ -33,6 +33,6 @@ public class Role implements GrantedAuthority {
 
     @Override
     public String getAuthority() {
-        return name.name(); // Возвращает "ROLE_ADMIN", "ROLE_USER" и т.д.
+        return name.name();
     }
 }

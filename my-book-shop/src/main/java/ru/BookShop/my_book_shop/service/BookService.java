@@ -10,9 +10,12 @@ import java.util.Optional;
 
 public interface BookService {
     void saveBook(Book book);
-    void saveBook(BookDto bookDto);
+
     List<Book> getBooksForUser();
+
     Optional<Book> findById(Long id);
+
     void deleteBook(Long id);
+
     BookDto createBook(@Valid BookDto bookDto, User user);
 }
